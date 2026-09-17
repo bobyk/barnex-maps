@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-17T00:00:00Z",
+  "maps": [
+    {
+      "vendor": "Deye",
+      "file": "maps/deye_hybrid_full.json",
+      "label": "Deye Hybrid — full (power + energy counters)",
+      "sha256": "64fece28928462ab44f57de414105ad0a773e47f8f87bd4a174923636d52a9aa"
+    },
+    {
+      "vendor": "Deye",
+      "file": "maps/deye_hybrid_native_equivalent.json",
+      "label": "Deye Hybrid — native-equivalent (matches built-in reader)",
+      "sha256": "5306ac89bbc875abdf6a85cfc8d8e84d4bd9af17bcf5f049b6c48d5eeb32c03e"
+    },
+    {
+      "vendor": "Deye",
+      "file": "maps/deye_hybrid_power.json",
+      "label": "Deye Hybrid — power only (block 150)",
+      "sha256": "f4c79d40e19aafa5786931c8d56da9b3200e862e473811eafde2ca1a6f031d94"
+    },
+    {
+      "vendor": "Deye",
+      "file": "maps/deye_hybrid_single_request.json",
+      "label": "Deye Hybrid — single Modbus request",
+      "sha256": "ddd2ff16069cdefcf149b1a09c7158cabd16aa826c78a5a6e91b64fed402140d"
+    },
+    {
+      "vendor": "Growatt",
+      "file": "maps/growatt_sph6000.json",
+      "label": "Growatt SPH-6000",
+      "sha256": "e23aa770e5cdfdda3895b0f29575e100de7eb2c65af02dd9570e9a9bae92bcac"
+    },
+    {
+      "vendor": "SRNE",
+      "file": "maps/srne_hf2430_rtu.json",
+      "label": "SRNE HF2430U60-100 (RTU)",
+      "sha256": "947e3183f0d3d2d1138a5f3293b784414916f8bb931aaa9037a848b69d652a9d"
+    }
+  ]
+}

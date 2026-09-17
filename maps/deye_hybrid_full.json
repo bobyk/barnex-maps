@@ -1,0 +1,30 @@
+{
+  "brand": "deye",
+  "model": "hybrid (power+energy)",
+  "protocol_version": "deye_hybrid_v1",
+  "created_at": "2026-08-04T12:00:00Z",
+  "transport": { "type": "tcp", "port": 8899, "slave_id": 1, "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "today_battery_charge_energy",    "address": 70,  "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read" },
+    { "name": "today_battery_discharge_energy", "address": 71,  "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read" },
+    { "name": "total_battery_charge_energy",    "address": 72,  "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "byte_order": "big_endian_word_swap" },
+    { "name": "total_battery_discharge_energy", "address": 74,  "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "byte_order": "big_endian_word_swap" },
+    { "name": "today_import_energy",            "address": 76,  "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read" },
+    { "name": "today_export_energy",            "address": 77,  "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read" },
+    { "name": "grid_frequency",                 "address": 79,  "function_code": 3, "data_type": "uint16", "scale": 0.01, "unit": "Hz",  "access": "read" },
+    { "name": "total_export_energy",            "address": 81,  "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "byte_order": "big_endian_word_swap" },
+    { "name": "today_load_energy",              "address": 84,  "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read" },
+    { "name": "total_load_energy",              "address": 85,  "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "byte_order": "big_endian_word_swap" },
+    { "name": "total_pv_energy",                "address": 96,  "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "byte_order": "big_endian_word_swap" },
+    { "name": "today_pv_energy",                "address": 108, "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read" },
+
+    { "name": "grid_voltage",                   "address": 150, "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "V",   "access": "read" },
+    { "name": "load_voltage",                   "address": 157, "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "V",   "access": "read" },
+    { "name": "grid_power",                     "address": 169, "function_code": 3, "data_type": "int16",  "scale": 1,    "unit": "W",   "access": "read" },
+    { "name": "load_power",                     "address": 178, "function_code": 3, "data_type": "uint16", "scale": 1,    "unit": "W",   "access": "read" },
+    { "name": "battery_soc",                    "address": 184, "function_code": 3, "data_type": "uint16", "scale": 1,    "unit": "%",   "access": "read" },
+    { "name": "pv1_power",                      "address": 186, "function_code": 3, "data_type": "uint16", "scale": 1,    "unit": "W",   "access": "read" },
+    { "name": "pv2_power",                      "address": 188, "function_code": 3, "data_type": "uint16", "scale": 1,    "unit": "W",   "access": "read" },
+    { "name": "battery_power",                  "address": 190, "function_code": 3, "data_type": "int16",  "scale": -1,   "unit": "W",   "access": "read" }
+  ]
+}

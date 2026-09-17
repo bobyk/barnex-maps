@@ -1,0 +1,20 @@
+{
+  "brand": "srne",
+  "model": "HF2430U60-100",
+  "protocol_version": "rs485_v1",
+  "created_at": "2026-08-04T12:00:00Z",
+  "transport": {
+    "type": "rtu",
+    "slave_id": 1,
+    "baud": 9600,
+    "serial_config": "8N1",
+    "byte_order": "big_endian"
+  },
+  "register_map": [
+    { "name": "battery_soc",  "address": 256, "function_code": 3, "data_type": "uint16", "scale": 1,   "unit": "%", "access": "read" },
+    { "name": "pv_power",     "address": 274, "function_code": 3, "data_type": "uint16", "scale": 1,   "unit": "W", "access": "read" },
+    { "name": "load_power",   "address": 278, "function_code": 3, "data_type": "uint16", "scale": 1,   "unit": "W", "access": "read" },
+    { "name": "grid_voltage", "address": 545, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "V", "access": "read" },
+    { "name": "grid_power",   "address": 553, "function_code": 3, "data_type": "int16",  "scale": 1,   "unit": "W", "access": "read" }
+  ]
+}
