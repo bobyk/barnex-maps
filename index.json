@@ -1,30 +1,12 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-17T00:00:00Z",
+  "updated_at": "2026-09-18T00:00:00Z",
   "maps": [
-    {
-      "vendor": "Deye",
-      "file": "maps/deye_hybrid_full.json",
-      "label": "Deye Hybrid — full (power + energy counters)",
-      "sha256": "64fece28928462ab44f57de414105ad0a773e47f8f87bd4a174923636d52a9aa"
-    },
     {
       "vendor": "Deye",
       "file": "maps/deye_hybrid_native_equivalent.json",
       "label": "Deye Hybrid — native-equivalent (matches built-in reader)",
       "sha256": "5306ac89bbc875abdf6a85cfc8d8e84d4bd9af17bcf5f049b6c48d5eeb32c03e"
-    },
-    {
-      "vendor": "Deye",
-      "file": "maps/deye_hybrid_power.json",
-      "label": "Deye Hybrid — power only (block 150)",
-      "sha256": "f4c79d40e19aafa5786931c8d56da9b3200e862e473811eafde2ca1a6f031d94"
-    },
-    {
-      "vendor": "Deye",
-      "file": "maps/deye_hybrid_single_request.json",
-      "label": "Deye Hybrid — single Modbus request",
-      "sha256": "ddd2ff16069cdefcf149b1a09c7158cabd16aa826c78a5a6e91b64fed402140d"
     },
     {
       "vendor": "Growatt",
