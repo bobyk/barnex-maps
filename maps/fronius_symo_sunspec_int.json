@@ -1,0 +1,82 @@
+{
+  "brand": "fronius",
+  "model": "Symo/Primo, SunSpec int+SF (models 101/103 inverter, 203 meter)",
+  "protocol_version": "sunspec-int-sf-v1",
+  "created_at": "2026-09-18T00:00:00Z",
+  "transport": {
+    "type": "tcp",
+    "port": 502,
+    "slave_id": 1,
+    "byte_order": "big_endian"
+  },
+  "register_map": [
+    {
+      "name": "grid_power",
+      "address": 40088,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": -1,
+      "scale_register": 40092,
+      "slave_id": 240,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage",
+      "address": 40077,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale_register": 40085,
+      "slave_id": 240,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_frequency",
+      "address": 40086,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale_register": 40087,
+      "unit": "Hz",
+      "access": "read"
+    },
+    {
+      "name": "pv_power",
+      "address": 40101,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale_register": 40102,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "total_pv_energy",
+      "address": 40094,
+      "function_code": 3,
+      "data_type": "uint32",
+      "scale_register": 40096,
+      "unit": "Wh",
+      "access": "read"
+    },
+    {
+      "name": "total_import_energy",
+      "address": 40116,
+      "function_code": 3,
+      "data_type": "uint32",
+      "scale_register": 40124,
+      "slave_id": 240,
+      "unit": "Wh",
+      "access": "read"
+    },
+    {
+      "name": "total_export_energy",
+      "address": 40108,
+      "function_code": 3,
+      "data_type": "uint32",
+      "scale_register": 40124,
+      "slave_id": 240,
+      "unit": "Wh",
+      "access": "read"
+    }
+  ]
+}

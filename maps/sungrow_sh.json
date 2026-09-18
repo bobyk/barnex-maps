@@ -1,0 +1,209 @@
+{
+  "brand": "sungrow",
+  "model": "SH-series",
+  "protocol_version": "sungrow-shx-2026.06.19",
+  "created_at": "2026-09-18",
+  "source": {
+    "repo": "https://github.com/mkaiser/Sungrow-SHx-Inverter-Modbus-Home-Assistant",
+    "commit": "310635c6e2c1122f5adb54fba7fdf33a7cb85142",
+    "file": "modbus_sungrow.yaml",
+    "note": "Modbus 'address' values below are the 0-based register addresses used directly in the source YAML's 'address:' field (Home Assistant Modbus integration convention). Sungrow's own datasheet register numbers, quoted in the source file's inline comments, are address+1."
+  },
+  "transport": {
+    "type": "tcp",
+    "port": 502,
+    "slave_id": 1,
+    "byte_order": "big_endian"
+  },
+  "register_map": [
+    {
+      "name": "grid_power",
+      "address": 5600,
+      "function_code": 4,
+      "data_type": "int32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 1,
+      "unit": "W",
+      "access": "read",
+      "_source": "modbus_sungrow.yaml lines 401-414, 'Meter active power', input_type: input, data_type: int32, swap: word. Comment: '> 0 buy from grid; < 0 sell to grid' -- already matches required convention (positive=import, negative=export), no sign flip needed."
+    },
+    {
+      "name": "pv_power",
+      "address": 5016,
+      "function_code": 4,
+      "data_type": "uint32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 1,
+      "unit": "W",
+      "access": "read",
+      "_source": "modbus_sungrow.yaml lines 259-271, 'Total DC power', input_type: input, data_type: uint32, swap: word. Cross-confirmed by evcc templates/definition/meter/sungrow-hybrid.yaml line ~125 (pv power source, address 5016, decode uint32s)."
+    },
+    {
+      "name": "battery_power",
+      "address": 5213,
+      "function_code": 4,
+      "data_type": "int32",
+      "byte_order": "big_endian_word_swap",
+      "scale": -1,
+      "unit": "W",
+      "access": "read",
+      "_source": "modbus_sungrow.yaml lines 369-384, 'Battery power', input_type: input, data_type: int32, swap: word. Comment: 'negative: Battery charging / positive: Battery discharging'. This is the OPPOSITE of the required convention (positive=charging), so scale=-1 is applied to flip the sign."
+    },
+    {
+      "name": "battery_soc",
+      "address": 13022,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "%",
+      "access": "read",
+      "_source": "modbus_sungrow.yaml lines 912-923, 'Battery level', input_type: input, data_type: uint16, scale: 0.1, unit_of_measurement: '%'. Cross-confirmed by evcc sungrow-hybrid.yaml soc block, address 13022."
+    },
+    {
+      "name": "load_power",
+      "address": 13007,
+      "function_code": 4,
+      "data_type": "int32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 1,
+      "unit": "W",
+      "access": "read",
+      "_source": "modbus_sungrow.yaml lines 778-791, 'Load power', input_type: input, data_type: int32, swap: word."
+    },
+    {
+      "name": "grid_voltage",
+      "address": 5018,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read",
+      "_source": "modbus_sungrow.yaml lines 273-284, 'Phase A voltage' (inverter grid-connection terminal, phase A), input_type: input, data_type: uint16, scale: 0.1. Cross-confirmed by evcc sungrow-hybrid.yaml line ~92 (address 5018, 'Phase A voltage, 0.1V')."
+    },
+    {
+      "name": "grid_frequency",
+      "address": 5241,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.01,
+      "unit": "Hz",
+      "access": "read",
+      "_source": "modbus_sungrow.yaml lines 386-397, 'Grid frequency', input_type: input, data_type: uint16, scale: 0.01."
+    },
+    {
+      "name": "today_pv_energy",
+      "address": 13001,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 724-735, 'Daily PV generation', input_type: input, data_type: uint16, scale: 0.1."
+    },
+    {
+      "name": "total_pv_energy",
+      "address": 13002,
+      "function_code": 4,
+      "data_type": "uint32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 737-749, 'Total PV generation', input_type: input, data_type: uint32, swap: word, scale: 0.1. Cross-confirmed by evcc sungrow-hybrid.yaml line ~131 (address 13002, 'Total PV Generation, 0.1kWh')."
+    },
+    {
+      "name": "today_import_energy",
+      "address": 13035,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 1031-1042, 'Daily imported energy', input_type: input, data_type: uint16, scale: 0.1."
+    },
+    {
+      "name": "total_import_energy",
+      "address": 13036,
+      "function_code": 4,
+      "data_type": "uint32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 1044-1056, 'Total imported energy', input_type: input, data_type: uint32, swap: word, scale: 0.1. Cross-confirmed by evcc sungrow-hybrid.yaml line ~48 ('energy' source, address 13036, 'Total Import Energy, 0.1kWh')."
+    },
+    {
+      "name": "today_export_energy",
+      "address": 13044,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 1085-1096, 'Daily exported energy', input_type: input, data_type: uint16, scale: 0.1."
+    },
+    {
+      "name": "total_export_energy",
+      "address": 13045,
+      "function_code": 4,
+      "data_type": "uint32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 1098-1110, 'Total exported energy', input_type: input, data_type: uint32, swap: word, scale: 0.1. Cross-confirmed by evcc sungrow-hybrid.yaml line ~57 ('returnenergy' source, address 13045, 'Total export energy, 0.1kWh')."
+    },
+    {
+      "name": "today_battery_charge_energy",
+      "address": 13039,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 1058-1069, 'Daily battery charge', input_type: input, data_type: uint16, scale: 0.1."
+    },
+    {
+      "name": "total_battery_charge_energy",
+      "address": 13040,
+      "function_code": 4,
+      "data_type": "uint32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 1071-1083, 'Total battery charge', input_type: input, data_type: uint32, swap: word, scale: 0.1. Cross-confirmed by evcc sungrow-hybrid.yaml line ~185 ('returnenergy' battery source, address 13040, 'Total Charge Energy, 0.1kWh')."
+    },
+    {
+      "name": "today_battery_discharge_energy",
+      "address": 13025,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 951-962, 'Daily battery discharge', input_type: input, data_type: uint16, scale: 0.1."
+    },
+    {
+      "name": "total_battery_discharge_energy",
+      "address": 13026,
+      "function_code": 4,
+      "data_type": "uint32",
+      "byte_order": "big_endian_word_swap",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "_source": "modbus_sungrow.yaml lines 964-976, 'Total battery discharge', input_type: input, data_type: uint32, swap: word, scale: 0.1. Cross-confirmed by evcc sungrow-hybrid.yaml line ~176 ('energy' battery source, address 13026, 'Total battery discharge energy, 0.1kWh')."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "brand": "deye",
+  "model": "SUN-5..25K-SG01HP3-EU-AM2 (3-phase HV hybrid, mod=1 / pre-firmware-1098 scaling)",
+  "protocol_version": "deye_sg01hp3_v1",
+  "created_at": "2026-09-18T14:25:00Z",
+  "transport": { "type": "tcp", "port": 8899, "slave_id": 1, "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "grid_voltage",  "address": 598, "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "V",  "access": "read" },
+    { "name": "load_voltage",  "address": 644, "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "V",  "access": "read" },
+    { "name": "grid_frequency","address": 609, "function_code": 3, "data_type": "uint16", "scale": 0.01, "unit": "Hz", "access": "read" },
+    { "name": "grid_power",    "address": 625, "function_code": 3, "data_type": "int16",  "scale": 1,    "unit": "W",  "access": "read" },
+    { "name": "load_power",    "address": 636, "function_code": 3, "data_type": "int16",  "scale": 1,    "unit": "W",  "access": "read" },
+    { "name": "battery_soc",   "address": 588, "function_code": 3, "data_type": "uint16", "scale": 1,    "unit": "%",  "access": "read" },
+    { "name": "pv1_power",     "address": 672, "function_code": 3, "data_type": "uint16", "scale": 10,   "unit": "W",  "access": "read" },
+    { "name": "pv2_power",     "address": 673, "function_code": 3, "data_type": "uint16", "scale": 10,   "unit": "W",  "access": "read" },
+    { "name": "pv3_power",     "address": 674, "function_code": 3, "data_type": "uint16", "scale": 10,   "unit": "W",  "access": "read" },
+    { "name": "pv4_power",     "address": 675, "function_code": 3, "data_type": "uint16", "scale": 10,   "unit": "W",  "access": "read" },
+    { "name": "battery_power", "address": 590, "function_code": 3, "data_type": "int16",  "scale": -10,  "unit": "W",  "access": "read" },
+
+    { "name": "today_battery_charge_energy",    "address": 514, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_battery_discharge_energy", "address": 515, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_battery_charge_energy",    "address": 516, "function_code": 3, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300, "byte_order": "big_endian_word_swap" },
+    { "name": "total_battery_discharge_energy", "address": 518, "function_code": 3, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300, "byte_order": "big_endian_word_swap" },
+    { "name": "today_import_energy",            "address": 520, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_export_energy",            "address": 521, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_import_energy",            "address": 522, "function_code": 3, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300, "byte_order": "big_endian_word_swap" },
+    { "name": "total_export_energy",            "address": 524, "function_code": 3, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300, "byte_order": "big_endian_word_swap" },
+    { "name": "today_load_energy",              "address": 526, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_load_energy",              "address": 527, "function_code": 3, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300, "byte_order": "big_endian_word_swap" },
+    { "name": "today_pv_energy",                "address": 529, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_pv_energy",                "address": 534, "function_code": 3, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300, "byte_order": "big_endian_word_swap" }
+  ]
+}

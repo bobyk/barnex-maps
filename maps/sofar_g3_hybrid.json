@@ -1,0 +1,29 @@
+{
+  "brand": "sofar",
+  "model": "G3 Hybrid (HYD series, e.g. HYD 5...20K-3PH / HYD 3...6K-EP)",
+  "protocol_version": "sofar_g3_hybrid_v1",
+  "created_at": "2026-09-18T00:00:00Z",
+  "transport": { "type": "tcp", "port": 8899, "slave_id": 1, "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "grid_voltage",  "address": 1165, "function_code": 3, "data_type": "uint16", "scale": 0.1,   "unit": "V",   "access": "read" },
+    { "name": "grid_frequency","address": 1156, "function_code": 3, "data_type": "uint16", "scale": 0.01,  "unit": "Hz",  "access": "read" },
+    { "name": "grid_power",    "address": 1160, "function_code": 3, "data_type": "int16",  "scale": -10,   "unit": "W",   "access": "read" },
+    { "name": "load_power",    "address": 1199, "function_code": 3, "data_type": "uint16", "scale": 10,    "unit": "W",   "access": "read" },
+    { "name": "pv_power",      "address": 1476, "function_code": 3, "data_type": "uint16", "scale": 100,   "unit": "W",   "access": "read" },
+    { "name": "battery_power", "address": 1639, "function_code": 3, "data_type": "int16",  "scale": -100,  "unit": "W",   "access": "read" },
+    { "name": "battery_soc",   "address": 1640, "function_code": 3, "data_type": "uint16", "scale": 1,     "unit": "%",   "access": "read" },
+
+    { "name": "today_pv_energy",                "address": 1668, "function_code": 3, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_pv_energy",                "address": 1670, "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_load_energy",              "address": 1672, "function_code": 3, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_load_energy",              "address": 1674, "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_import_energy",            "address": 1676, "function_code": 3, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_import_energy",            "address": 1678, "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_export_energy",            "address": 1680, "function_code": 3, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_export_energy",            "address": 1682, "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_battery_charge_energy",    "address": 1684, "function_code": 3, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_battery_charge_energy",    "address": 1686, "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_battery_discharge_energy", "address": 1688, "function_code": 3, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_battery_discharge_energy", "address": 1690, "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 }
+  ]
+}

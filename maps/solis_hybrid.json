@@ -1,0 +1,30 @@
+{
+  "brand": "solis",
+  "model": "Hybrid RHI/RAI series (native protocol, input registers 33xxx)",
+  "protocol_version": "solis_hybrid_33xxx_v1",
+  "created_at": "2026-09-18T00:00:00Z",
+  "transport": { "type": "rtu", "slave_id": 1, "baud": 9600, "serial_config": "8N1", "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "grid_power",    "address": 33263, "function_code": 4, "data_type": "int32",  "scale": -1,   "unit": "W",   "access": "read" },
+    { "name": "pv_power",      "address": 33057, "function_code": 4, "data_type": "uint32", "scale": 1,    "unit": "W",   "access": "read" },
+    { "name": "battery_power", "address": 33149, "function_code": 4, "data_type": "int32",  "scale": -1,   "unit": "W",   "access": "read" },
+    { "name": "battery_soc",   "address": 33139, "function_code": 4, "data_type": "uint16", "scale": 1,    "unit": "%",   "access": "read" },
+    { "name": "load_power",    "address": 33147, "function_code": 4, "data_type": "uint16", "scale": 1,    "unit": "W",   "access": "read" },
+    { "name": "grid_voltage",  "address": 33128, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "V",   "access": "read" },
+    { "name": "load_voltage",  "address": 33073, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "V",   "access": "read" },
+
+    { "name": "grid_frequency",                 "address": 33282, "function_code": 4, "data_type": "uint16", "scale": 0.01, "unit": "Hz",  "access": "read", "min_refresh_s": 300 },
+    { "name": "today_pv_energy",                "address": 33035, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_pv_energy",                "address": 33029, "function_code": 4, "data_type": "uint32", "scale": 1,    "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_import_energy",            "address": 33171, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_export_energy",            "address": 33175, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_import_energy",            "address": 33283, "function_code": 4, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_export_energy",            "address": 33285, "function_code": 4, "data_type": "uint32", "scale": 0.01, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_load_energy",              "address": 33179, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_load_energy",              "address": 33177, "function_code": 4, "data_type": "uint32", "scale": 1,    "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_battery_charge_energy",    "address": 33163, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_battery_discharge_energy", "address": 33167, "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_battery_charge_energy",    "address": 33161, "function_code": 4, "data_type": "uint32", "scale": 1,    "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_battery_discharge_energy", "address": 33165, "function_code": 4, "data_type": "uint32", "scale": 1,    "unit": "kWh", "access": "read", "min_refresh_s": 300 }
+  ]
+}
