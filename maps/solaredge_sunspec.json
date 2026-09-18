@@ -1,0 +1,21 @@
+{
+  "brand": "solaredge",
+  "model": "SunSpec (standard) - model 103 three-phase inverter + model 203 meter",
+  "protocol_version": "sunspec-101-103-203-v1",
+  "created_at": "2026-09-18T14:25:42Z",
+  "transport": { "type": "tcp", "port": 502, "slave_id": 1, "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "pv_power", "address": 40101, "function_code": 3, "data_type": "int16", "scale_register": 40102, "unit": "W", "access": "read" },
+
+    { "name": "grid_power", "address": 40088, "function_code": 3, "data_type": "int16", "scale_register": 40092, "unit": "W", "access": "read", "slave_id": 1 },
+    { "name": "grid_voltage", "address": 40077, "function_code": 3, "data_type": "int16", "scale_register": 40085, "unit": "V", "access": "read", "slave_id": 1 },
+    { "name": "grid_frequency", "address": 40086, "function_code": 3, "data_type": "int16", "scale_register": 40087, "unit": "Hz", "access": "read", "slave_id": 1 },
+
+    { "name": "total_pv_energy", "address": 40094, "function_code": 3, "data_type": "uint32", "scale_register": 40096, "unit": "Wh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_import_energy", "address": 40116, "function_code": 3, "data_type": "uint32", "scale_register": 40124, "unit": "Wh", "access": "read", "slave_id": 1, "min_refresh_s": 300 },
+    { "name": "total_export_energy", "address": 40108, "function_code": 3, "data_type": "uint32", "scale_register": 40124, "unit": "Wh", "access": "read", "slave_id": 1, "min_refresh_s": 300 },
+
+    { "name": "battery_power", "address": 57716, "function_code": 3, "data_type": "float32", "unit": "W", "access": "read" },
+    { "name": "battery_soc", "address": 57732, "function_code": 3, "data_type": "float32", "unit": "%", "access": "read" }
+  ]
+}

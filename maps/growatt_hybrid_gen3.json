@@ -1,0 +1,40 @@
+{
+  "brand": "growatt",
+  "model": "Legacy SPH hybrid generation (GEN3 protocol: SPH 3000-10000TL-BL, SPH 4000-10000TL3 BH-UP)",
+  "protocol_version": "growatt_gen3_hybrid_v1",
+  "created_at": "2026-09-18T00:00:00Z",
+  "transport": { "type": "tcp", "port": 502, "slave_id": 1, "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "pv_power",        "address": 1,   "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "W", "access": "read" },
+    { "name": "pv1_power",       "address": 5,   "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "W", "access": "read" },
+    { "name": "pv2_power",       "address": 9,   "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "W", "access": "read" },
+
+    { "name": "grid_frequency",  "address": 37,  "function_code": 4, "data_type": "uint16", "scale": 0.01, "unit": "Hz", "access": "read" },
+    { "name": "grid_voltage",    "address": 38,  "function_code": 4, "data_type": "uint16", "scale": 0.1,  "unit": "V",  "access": "read" },
+
+    { "name": "grid_import_power", "address": 1021, "function_code": 4, "data_type": "int32", "scale": 0.1, "unit": "W", "access": "read" },
+    { "name": "grid_export_power", "address": 1029, "function_code": 4, "data_type": "int32", "scale": 0.1, "unit": "W", "access": "read" },
+
+    { "name": "load_power",      "address": 1037, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "W", "access": "read" },
+
+    { "name": "battery_soc",              "address": 1014, "function_code": 4, "data_type": "uint16", "scale": 1,   "unit": "%", "access": "read" },
+    { "name": "battery_charge_power",     "address": 1011, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "W", "access": "read" },
+    { "name": "battery_discharge_power",  "address": 1009, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "W", "access": "read" },
+
+    { "name": "today_pv_energy",  "address": 53,  "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read" },
+    { "name": "total_pv_energy",  "address": 91,  "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read" },
+
+    { "name": "today_import_energy", "address": 1044, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_import_energy", "address": 1046, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_export_energy", "address": 1048, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_export_energy", "address": 1050, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+
+    { "name": "today_load_energy", "address": 1060, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_load_energy", "address": 1062, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+
+    { "name": "today_battery_discharge_energy", "address": 1052, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_battery_discharge_energy", "address": 1054, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "today_battery_charge_energy",    "address": 1056, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
+    { "name": "total_battery_charge_energy",    "address": 1058, "function_code": 4, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 }
+  ]
+}
