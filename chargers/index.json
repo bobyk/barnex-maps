@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-19T00:00:00Z",
+  "chargers": [
+    {
+      "id": "eveus-current-1",
+      "vendor": "eveus",
+      "variant": "current",
+      "rev": 1,
+      "file": "chargers/maps/eveus_current.json",
+      "sha256": "2552f0333820bf545ec3aed63cc4d20463f626b5e048dee4aa3bc700c541f146",
+      "sig": "",
+      "verified": false,
+      "label": "Eveus Pro / Energy Star — current API (R3.02.9 / R3.05.x)",
+      "detect_summary": {
+        "probe": { "method": "GET", "path": "/main" },
+        "all": [
+          { "json": "verFWWifi", "exists": true },
+          { "json": "currentSet", "exists": true }
+        ]
+      }
+    },
+    {
+      "id": "eveus-legacy-1",
+      "vendor": "eveus",
+      "variant": "legacy",
+      "rev": 1,
+      "file": "chargers/maps/eveus_legacy.json",
+      "sha256": "93160c9b7e2f262e1fabc7926ba81dcbc369547deeb2e00de0162de5973fea9d",
+      "sig": "",
+      "verified": false,
+      "label": "Eveus Energy Star — legacy API (R3.02.x and earlier)",
+      "detect_summary": {
+        "probe": { "method": "GET", "path": "/main" },
+        "all": [
+          { "json": "currentSet", "exists": true },
+          { "json": "state", "exists": true }
+        ],
+        "none": [
+          { "json": "verFWWifi", "exists": true }
+        ]
+      }
+    }
+  ]
+}
