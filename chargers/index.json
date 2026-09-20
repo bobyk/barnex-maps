@@ -36,7 +36,7 @@
       "rev": 2,
       "file": "chargers/maps/eveus_legacy.json",
       "sha256": "5fdb7a184ae449ef1b05cead66ca262dedc3fd072c1d867d711919c58e51b32a",
-      "sig": "",
+      "sig": "74fefb9c4df9c4d3039fb60a687c2366d6b2a731c788b67acf25dc7be17fe541a6667ae2d359493f984660571b7ccbbed4df54e28d661aeaa00f4d6d48ce910f",
       "verified": false,
       "label": "Eveus Energy Star \u2014 legacy API (R3.02.x and earlier)",
       "detect_summary": {
