@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "kind": "charger",
+  "vendor": "eveus",
+  "variant": "legacy",
+  "rev": 1,
+  "model_hint": "Eveus Energy Star, legacy API (firmware R3.02.x and earlier)",
+  "verified": false,
+  "transport": { "type": "http", "port": 80, "auth": "basic" },
+  "detect": {
+    "probe": { "method": "GET", "path": "/main" },
+    "all": [
+      { "json": "currentSet", "exists": true },
+      { "json": "state", "exists": true }
+    ],
+    "none": [
+      { "json": "verFWWifi", "exists": true }
+    ]
+  },
+  "auth_check": { "method": "GET", "path": "/", "ok": [200], "bad": [401], "default_creds": [] },
+  "ident": {
+    "serial": ["serialNum", "stationId"],
+    "fw": ["verFWMain"],
+    "model": []
+  },
+  "poll": { "method": "GET", "path": "/main", "min_interval_ms": 1000 },
+  "read": {
+    "state": "state",
+    "set_a": { "key": "currentSet", "scale": 0.1 },
+    "meas_a": { "key": "curMeas1", "scale": 0.1 },
+    "volt": "voltMeas1",
+    "session_kwh": { "key": "sessionEnergy", "scale": 0.1 },
+    "enabled": { "key": "evseEnabled", "invert": false }
+  },
+  "states": { "2": "A", "3": "B", "4": "C", "5": "B", "6": "B", "7": "E" },
+  "quirks": { "skip_polls_after_write": 2, "single_connection": true }
+}
