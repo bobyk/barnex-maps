@@ -1,22 +1,31 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-19T00:00:00Z",
+  "updated_at": "2026-09-20T07:29:47Z",
   "chargers": [
     {
       "id": "eveus-current-1",
       "vendor": "eveus",
       "variant": "current",
-      "rev": 1,
+      "rev": 2,
       "file": "chargers/maps/eveus_current.json",
-      "sha256": "2552f0333820bf545ec3aed63cc4d20463f626b5e048dee4aa3bc700c541f146",
+      "sha256": "52c36ccd2c7622127cd0daa4bdfa24a0c04c337ba90f4eadc8a50de9f910dc53",
       "sig": "",
-      "verified": false,
-      "label": "Eveus Pro / Energy Star — current API (R3.02.9 / R3.05.x)",
+      "verified": true,
+      "label": "Eveus Pro / Energy Star \u2014 current API (R3.02.9 / R3.05.x)",
       "detect_summary": {
-        "probe": { "method": "GET", "path": "/main" },
+        "probe": {
+          "method": "GET",
+          "path": "/main"
+        },
         "all": [
-          { "json": "verFWWifi", "exists": true },
-          { "json": "currentSet", "exists": true }
+          {
+            "json": "verFWWifi",
+            "exists": true
+          },
+          {
+            "json": "currentSet",
+            "exists": true
+          }
         ]
       }
     },
@@ -24,20 +33,32 @@
       "id": "eveus-legacy-1",
       "vendor": "eveus",
       "variant": "legacy",
-      "rev": 1,
+      "rev": 2,
       "file": "chargers/maps/eveus_legacy.json",
-      "sha256": "93160c9b7e2f262e1fabc7926ba81dcbc369547deeb2e00de0162de5973fea9d",
-      "sig": "",
+      "sha256": "5fdb7a184ae449ef1b05cead66ca262dedc3fd072c1d867d711919c58e51b32a",
+      "sig": "74fefb9c4df9c4d3039fb60a687c2366d6b2a731c788b67acf25dc7be17fe541a6667ae2d359493f984660571b7ccbbed4df54e28d661aeaa00f4d6d48ce910f",
       "verified": false,
-      "label": "Eveus Energy Star — legacy API (R3.02.x and earlier)",
+      "label": "Eveus Energy Star \u2014 legacy API (R3.02.x and earlier)",
       "detect_summary": {
-        "probe": { "method": "GET", "path": "/main" },
+        "probe": {
+          "method": "GET",
+          "path": "/main"
+        },
         "all": [
-          { "json": "currentSet", "exists": true },
-          { "json": "state", "exists": true }
+          {
+            "json": "currentSet",
+            "exists": true
+          },
+          {
+            "json": "state",
+            "exists": true
+          }
         ],
         "none": [
-          { "json": "verFWWifi", "exists": true }
+          {
+            "json": "verFWWifi",
+            "exists": true
+          }
         ]
       }
     }

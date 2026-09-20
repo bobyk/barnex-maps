@@ -203,7 +203,7 @@ def charger_body_template_ok(body) -> str | None:
     return None
 
 
-CHARGER_READ_SLOTS = {"state", "set_a", "meas_a", "volt", "power_w", "session_kwh", "enabled"}
+CHARGER_READ_SLOTS = {"state", "set_a", "meas_a", "volt", "power_w", "session_kwh", "enabled", "temp_c"}
 MAX_CHARGER_READ_FIELDS = 32  # ChargerMap::MAX_READ_FIELDS
 MAX_CHARGER_FILE_BYTES = 8192  # ChargerMap::MAX_FILE_BYTES
 
