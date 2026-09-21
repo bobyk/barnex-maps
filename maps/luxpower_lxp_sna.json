@@ -1,0 +1,387 @@
+{
+  "brand": "luxpower",
+  "model": "LXP / SNA hybrid family (EG4 and other rebrands share this map)",
+  "protocol_version": "lxp_v1",
+  "created_at": "2026-09-21T00:00:00Z",
+  "transport": {
+    "type": "rtu",
+    "baud": 9600,
+    "serial_config": "8N1",
+    "slave_id": 1,
+    "byte_order": "big_endian"
+  },
+  "notes": "RTU ONLY as shipped: the stock LuxPower/EG4 WiFi dongle (TCP port 8000) uses a proprietary framing wrapper around Modbus, reverse-engineered by lux-mon's PROTOCOL.md — it is NOT plain Modbus/TCP and this firmware's InverterMap::Reader (ModbusTcpClient) cannot talk to it directly (same class of problem Deye's dongle needed a dedicated SolarmanV5Client for). Use this map only over direct RS485 (USB adapter or a genuine third-party Modbus/TCP<->RTU gateway) — if you have one, change transport.type to \"tcp\" and set the gateway's IP/port before uploading. LuxPower and EG4 (and other rebrands) share one register layout — confirmed by ant0nkr/luxpower-ha-integration, which cites LuxPower's own protocol PDF (06-01-01-PTC-Luxpower MODBUS Protocol_2024.04.26.pdf) and the EG4-18KPV PDF; SNA (off-grid) vs LXP (grid-tied) is a firmware/model distinction, not a different address map, so one file covers both. No native signed grid_power/battery_power register exists in this protocol (only unsigned split pairs) — same computed-field limitation already documented for the Growatt GEN3/4 and SMA-native maps in this repo; ships as grid_export_power/grid_import_power and battery_charge_power/battery_discharge_power, TELEMETRY ONLY until InverterMapReader gains an A-minus-B computed field. battery_soc (input register 5) is deliberately OMITTED: the register packs SOC in the low byte and SOH in the high byte of one uint16 (confirmed independently by celsworth/lxp-bridge's Rust decoder and a DIY Solar Forum capture: soc = reg5 & 0xFF, soh = reg5 >> 8) — this schema has no bitmask/sub-byte extraction feature, and reading it as a plain scaled uint16 would report a wildly wrong percentage whenever SOH is populated. Do not invent a scale to work around it; wait for a firmware bitmask feature. Holding register 66 (AC_CHARGE_POWER_CMD) and any 'charge_first_soc_limit'-style field are also omitted for the same class of reason — hoang-rio/lux-web-viewer documents them holding their value in the high byte of the word, decoded via >>8/<<8 by client code, which this schema cannot express either. 32-bit energy counters are low-word-then-high-word at address N/N+1 (byte_order: big_endian_word_swap), the same convention already used by this project's Deye maps. Sources: celsworth/lxp-bridge doc/inputs.md@19854ee88718dd3444d18fa94e36ace1fba177b0 and doc/LXP_REGISTERS.txt@8df104aa35608065e0d683332e1e151a950a52b8 (field semantics, holding-register names, widely deployed reference implementation) cross-checked against jmewing/lux-mon docs/reference/luxpower-ha-register-map.md@007421765b6260d2bcfc08c4da6af8e381ed8443 (numeric addresses, consolidated from ant0nkr/luxpower-ha-integration v1.0.0, itself citing the official LuxPower protocol PDF) and docs/reference/eg4-bridge/doc/eg4_registers.json@5701e003ffa6071ab25cf62aaac3cadba1171e50 (independent numeric cross-check, same addresses). Three independent projects agree on this register sequence.",
+  "register_map": [
+    {
+      "name": "battery_voltage",
+      "address": 4,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "pv1_power",
+      "address": 7,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "pv2_power",
+      "address": 8,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "pv3_power",
+      "address": 9,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "battery_charge_power",
+      "address": 10,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "battery_discharge_power",
+      "address": 11,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage",
+      "address": 12,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage_l2",
+      "address": 13,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage_l3",
+      "address": 14,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_frequency",
+      "address": 15,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.01,
+      "unit": "Hz",
+      "access": "read"
+    },
+    {
+      "name": "grid_export_power",
+      "address": 26,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_import_power",
+      "address": 27,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "load_power",
+      "address": 170,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_export_power_l2",
+      "address": 184,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_export_power_l3",
+      "address": 185,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_import_power_l2",
+      "address": 186,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_import_power_l3",
+      "address": 187,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "battery_temp",
+      "address": 67,
+      "function_code": 4,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "",
+      "access": "read"
+    },
+    {
+      "name": "today_battery_charge_energy",
+      "address": 33,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "today_battery_discharge_energy",
+      "address": 34,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "today_export_energy",
+      "address": 36,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "today_import_energy",
+      "address": 37,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "today_load_energy",
+      "address": 171,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "pv1_energy_today",
+      "address": 28,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "pv2_energy_today",
+      "address": 29,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "pv3_energy_today",
+      "address": 30,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "total_battery_charge_energy",
+      "address": 50,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "total_battery_discharge_energy",
+      "address": 52,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "total_export_energy",
+      "address": 56,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "total_import_energy",
+      "address": 58,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "total_load_energy",
+      "address": 172,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "pv1_total_energy",
+      "address": 40,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "pv2_total_energy",
+      "address": 42,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "pv3_total_energy",
+      "address": 44,
+      "function_code": 4,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "charge_power_percent_cmd",
+      "address": 64,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "%",
+      "access": "read_write",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "dischg_power_percent_cmd",
+      "address": 65,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "%",
+      "access": "read_write",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "ac_charge_soc_limit",
+      "address": 67,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "%",
+      "access": "read_write",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "dischg_cut_off_soc_eod",
+      "address": 105,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "%",
+      "access": "read_write",
+      "min_refresh_s": 300
+    }
+  ],
+  "checksum": "4ac24dd5033442b91e33eef1b7b7c5ec57cc647d0a136c015a256a93941c98c4"
+}
