@@ -89,6 +89,7 @@ fallback).
 | Deye | Yes (`InverterVendors.cpp`) | native-equivalent (**verified**), SG04LP3, SG01HP3/SG04HP3, microinverter |
 | Growatt | Only at heuristic confidence (never auto-fetched) | SPH-6000 (legacy, unverified), GEN4, GEN3 hybrid — telemetry-only, see notes |
 | Victron | Yes | Cerbo/Venus GX |
+| Luxpower | No detection signature | LXP/SNA hybrid (EG4 and other rebrands) — RTU only, see notes |
 | SRNE | No detection signature | HF2430U60-100 |
 | Solis | No detection signature | Hybrid RHI/RAI |
 | Sofar | No detection signature | G3 Hybrid |
