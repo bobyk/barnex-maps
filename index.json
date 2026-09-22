@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-21T14:33:49Z",
+  "updated_at": "2026-09-22T12:00:00Z",
   "maps": [
     {
       "vendor": "Deye",
@@ -295,7 +295,7 @@
         "Luxpower SNA (off-grid/hybrid)",
         "EG4 6000XP / 18kPV and other Luxpower rebrands (same register layout)"
       ],
-      "notes": "Three independently-maintained community projects agree on this register sequence (celsworth/lxp-bridge, the long-standing reference implementation; jmewing/lux-mon's consolidated doc, itself citing LuxPower's own protocol PDF via ant0nkr/luxpower-ha-integration; and a second, separately-numbered eg4_registers.json cross-check) \u2014 but none is a live-hardware confirmation against esp32_coordinator itself, hence unverified rather than verified. RTU ONLY: the stock LuxPower/EG4 WiFi dongle (TCP port 8000) speaks a proprietary framing wrapper, not plain Modbus/TCP \u2014 this map only works over direct RS485 or a genuine Modbus/TCP\u2194RTU gateway, the same class of caveat that makes Deye's own dongle need a dedicated SolarmanV5Client instead of a plain map. No native signed grid_power/battery_power register exists in this protocol \u2014 ships as the raw grid_export_power/grid_import_power and battery_charge_power/battery_discharge_power pairs instead, TELEMETRY ONLY until esp32_coordinator's InverterMapReader gains an A-minus-B computed field (same limitation already flagged on the Growatt GEN3/4 and SMA-native maps in this repo). battery_soc (input register 5) is deliberately omitted: it packs SOC in the low byte and SOH in the high byte of one uint16, confirmed independently by lxp-bridge's own decoder and a DIY Solar Forum hardware capture \u2014 this schema has no bitmask/sub-byte extraction feature, so a plain scaled read would misreport the percentage whenever SOH is populated.",
+      "notes": "Cross-checked across three independent community projects (see source, commit-pinned) \u2014 not confirmed on real hardware, hence unverified. RTU ONLY: the stock WiFi dongle speaks a proprietary framing wrapper, not plain Modbus/TCP. No native signed grid_power/battery_power register in this protocol \u2014 ships as unsigned split pairs (grid_export/import_power, battery_charge/discharge_power), telemetry-only, same limitation as the Growatt GEN3/4 maps. battery_soc omitted: input register 5 packs SOC (low byte) and SOH (high byte) into one word this schema can't decode. Full rationale: the map file's own notes field.",
       "sha256": "c072c85af58f67d8ee59879b1cb4e7429a7b4f63973226261ff2f270602c4e1b"
     }
   ]
