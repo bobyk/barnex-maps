@@ -1,15 +1,63 @@
 {
   "brand": "deye",
-  "model": "Deye Microinverter (SUN-M60/M80/2000-G3 family, no battery)",
+  "model": "Microinverter (no batt)",
   "protocol_version": "deye_micro_v1",
   "created_at": "2026-09-18T14:25:00Z",
-  "transport": { "type": "tcp", "port": 8899, "slave_id": 1, "byte_order": "big_endian" },
+  "transport": {
+    "type": "tcp",
+    "port": 8899,
+    "slave_id": 1,
+    "byte_order": "big_endian"
+  },
   "register_map": [
-    { "name": "grid_voltage",   "address": 73, "function_code": 3, "data_type": "uint16", "scale": 0.1,  "unit": "V",  "access": "read" },
-    { "name": "grid_frequency", "address": 79, "function_code": 3, "data_type": "uint16", "scale": 0.01, "unit": "Hz", "access": "read" },
-    { "name": "pv_power",       "address": 86, "function_code": 3, "data_type": "uint32", "scale": 0.1,  "unit": "W",  "access": "read", "byte_order": "big_endian_word_swap" },
-
-    { "name": "today_pv_energy", "address": 60, "function_code": 3, "data_type": "uint16", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300 },
-    { "name": "total_pv_energy", "address": 63, "function_code": 3, "data_type": "uint32", "scale": 0.1, "unit": "kWh", "access": "read", "min_refresh_s": 300, "byte_order": "big_endian_word_swap" }
+    {
+      "name": "grid_voltage",
+      "address": 73,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_frequency",
+      "address": 79,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 0.01,
+      "unit": "Hz",
+      "access": "read"
+    },
+    {
+      "name": "pv_power",
+      "address": 86,
+      "function_code": 3,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "W",
+      "access": "read",
+      "byte_order": "big_endian_word_swap"
+    },
+    {
+      "name": "today_pv_energy",
+      "address": 60,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300
+    },
+    {
+      "name": "total_pv_energy",
+      "address": 63,
+      "function_code": 3,
+      "data_type": "uint32",
+      "scale": 0.1,
+      "unit": "kWh",
+      "access": "read",
+      "min_refresh_s": 300,
+      "byte_order": "big_endian_word_swap"
+    }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "brand": "Victron",
-  "model": "Cerbo/Venus GX (com.victronenergy.system)",
-  "protocol_version": "gx-system-svc-2026.09",
+  "model": "Cerbo/Venus GX",
+  "protocol_version": "victron_gx_v1",
   "created_at": "2026-09-18T14:24:52Z",
   "notes": "Sourced from Victron's own victronenergy/dbus_modbustcp repo (attributes.csv / CCGX-Modbus-TCP-register-list.xlsx, commit 97a77d928873e32844cf8b898a56a4e58f23c933) and cross-checked against evcc-io/evcc (commit a3a34410f8502d6db44a3ba07b83ab69928274e9), templates/definition/meter/victron-energy.yaml. All registers below live on the com.victronenergy.system D-Bus service, which victronenergy/dbus_modbustcp's unitid2di.csv fixes at Modbus unit id 100 for every installation ('100,0,Workaround for clients that do not support unit ID 0') -- this is the same id already used by this firmware's tryVictron() detector. grid_power and load_power are L1-only (registers 817/820 cover phase 1 of the com.victronenergy.system block; this firmware's map schema has no per-field multi-register summation, so 2/3-phase installs will under-report total grid/load power -- single-phase Victron systems are unaffected). pv_power (register 850, /Dc/Pv/Power) covers DC-coupled MPPT solar chargers only; AC-coupled PV inverters are exposed per-phase (808-813) and are not included for the same L1-only reason. grid_voltage, grid_frequency, today_pv_energy and total_pv_energy are deliberately omitted -- gaps, not oversights: on Venus OS these only exist on the vebus/grid-meter/solarcharger D-Bus services, each of which gets a per-installation Modbus unit id assigned dynamically (Settings > Services > Modbus TCP), not the fixed id 100, so no single address can be published as correct for every Victron system.",
   "transport": {
@@ -11,10 +11,50 @@
     "byte_order": "big_endian"
   },
   "register_map": [
-    { "name": "grid_power", "address": 820, "function_code": 4, "data_type": "int16", "scale": 1, "unit": "W", "access": "read" },
-    { "name": "load_power", "address": 817, "function_code": 4, "data_type": "uint16", "scale": 1, "unit": "W", "access": "read" },
-    { "name": "pv_power", "address": 850, "function_code": 4, "data_type": "uint16", "scale": 1, "unit": "W", "access": "read" },
-    { "name": "battery_power", "address": 842, "function_code": 4, "data_type": "int16", "scale": 1, "unit": "W", "access": "read" },
-    { "name": "battery_soc", "address": 843, "function_code": 4, "data_type": "uint16", "scale": 1, "unit": "%", "access": "read" }
+    {
+      "name": "grid_power",
+      "address": 820,
+      "function_code": 4,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "load_power",
+      "address": 817,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "pv_power",
+      "address": 850,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "battery_power",
+      "address": 842,
+      "function_code": 4,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "battery_soc",
+      "address": 843,
+      "function_code": 4,
+      "data_type": "uint16",
+      "scale": 1,
+      "unit": "%",
+      "access": "read"
+    }
   ]
 }

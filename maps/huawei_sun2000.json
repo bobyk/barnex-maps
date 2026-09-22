@@ -1,7 +1,7 @@
 {
   "brand": "huawei",
   "model": "SUN2000",
-  "protocol_version": "huawei-sun2000-modbus-v1",
+  "protocol_version": "huawei_sun2000_v1",
   "created_at": "2026-09-18",
   "transport": {
     "type": "tcp",

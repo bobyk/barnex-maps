@@ -43,6 +43,18 @@ VALID_ACCESS = {"read", "write", "read_write", "r", "w", "rw", "readwrite"}
 VALID_STATUS = {"verified", "unverified"}
 MAX_BLOCK_REGS = 64  # must match InverterMap::MAX_BLOCK_REGS in esp32_coordinator
 
+# char[N] caps in esp32_coordinator's src/InverterMap/InverterMapTypes.h —
+# BRAND_MAX/MODEL_MAX/PROTO_MAX are the array sizes, so the usable string
+# length (what InverterMapStore::validate() actually enforces) is cap - 1
+# for the NUL terminator. A map that trips these gets silently rejected by
+# the real firmware with "field: too long (max N chars)" even though this
+# script's exit code was 0 — this happened in practice (2026-09-22: 15 of
+# 18 maps in this repo had a model/protocol_version over these limits and
+# nobody caught it here first).
+BRAND_MAX = 20
+MODEL_MAX = 28
+PROTO_MAX = 20
+
 
 def words_for(data_type: str) -> int:
     return 1 if data_type in ("uint16", "u16", "int16", "i16", "s16") else 2
@@ -56,11 +68,14 @@ def validate_map(path: Path) -> list[str]:
     except (OSError, json.JSONDecodeError) as e:
         return [f"cannot read/parse: {e}"]
 
-    for key in ("brand", "model", "transport", "register_map"):
-        if key not in doc:
-            errors.append(f"missing top-level '{key}'")
-    if errors:
-        return errors  # nothing else is safe to check without these
+    missing = [key for key in ("brand", "model", "transport", "register_map") if key not in doc]
+    if missing:
+        return [f"missing top-level '{key}'" for key in missing]  # nothing else is safe to check without these
+
+    for field, cap in (("brand", BRAND_MAX), ("model", MODEL_MAX), ("protocol_version", PROTO_MAX)):
+        val = doc.get(field)
+        if val is not None and len(val) > cap - 1:
+            errors.append(f"{field} too long ({len(val)} chars, max {cap - 1} — firmware char[{cap}]): {val!r}")
 
     transport = doc["transport"]
     if transport.get("type") not in ("tcp", "rtu"):

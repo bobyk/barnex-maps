@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-22T12:00:00Z",
+  "updated_at": "2026-09-22T13:00:00Z",
   "maps": [
     {
       "vendor": "Deye",
       "file": "maps/deye_hybrid_native_equivalent.json",
-      "label": "Deye Hybrid \u2014 native-equivalent (matches built-in reader)",
+      "label": "Deye Hybrid — native-equivalent (matches built-in reader)",
       "status": "verified",
       "source": [],
       "models": [
         "SUN-*-SG01LP1 (single-phase LV hybrid)"
       ],
-      "notes": "The only verified map in this repo \u2014 matches esp32_coordinator's built-in native Deye/Solarman reader (src/ModbusScan/InverterLive.cpp) register-for-register, confirmed against real hardware. Canonical reference for field names and the project's sign convention (grid_power +import/-export, battery_power +charge/-discharge).",
+      "notes": "The only verified map in this repo — matches esp32_coordinator's built-in native Deye/Solarman reader (src/ModbusScan/InverterLive.cpp) register-for-register, confirmed against real hardware. Canonical reference for field names and the project's sign convention (grid_power +import/-export, battery_power +charge/-discharge).",
       "sha256": "5306ac89bbc875abdf6a85cfc8d8e84d4bd9af17bcf5f049b6c48d5eeb32c03e"
     },
     {
@@ -23,7 +23,7 @@
       "models": [
         "SPH-6000"
       ],
-      "notes": "Pre-existing example map; provenance not independently re-sourced/cited in this pass. Superseded in practice by growatt_hybrid_gen4.json / growatt_hybrid_gen3.json, which are cited against community register tables \u2014 prefer those for new installs.",
+      "notes": "Pre-existing example map; provenance not independently re-sourced/cited in this pass. Superseded in practice by growatt_hybrid_gen4.json / growatt_hybrid_gen3.json, which are cited against community register tables — prefer those for new installs.",
       "sha256": "e23aa770e5cdfdda3895b0f29575e100de7eb2c65af02dd9570e9a9bae92bcac"
     },
     {
@@ -35,13 +35,13 @@
       "models": [
         "HF2430U60-100"
       ],
-      "notes": "Pre-existing example map; provenance not independently re-sourced/cited in this pass. SRNE has no detection signature in InverterVendors.cpp \u2014 auto-fetch cannot reach this map today.",
+      "notes": "Pre-existing example map; provenance not independently re-sourced/cited in this pass. SRNE has no detection signature in InverterVendors.cpp — auto-fetch cannot reach this map today.",
       "sha256": "947e3183f0d3d2d1138a5f3293b784414916f8bb931aaa9037a848b69d652a9d"
     },
     {
       "vendor": "Deye",
       "file": "maps/deye_sg04lp3.json",
-      "label": "Deye SG04LP3 \u2014 3-phase LV hybrid",
+      "label": "Deye SG04LP3 — 3-phase LV hybrid",
       "status": "unverified",
       "source": [
         "https://github.com/davidrapan/ha-solarman/blob/ac1d88b83268beeb0511b8a1b7fc8e17deddc044/custom_components/solarman/inverter_definitions/deye_p3.yaml",
@@ -50,13 +50,13 @@
       "models": [
         "SUN-5/6/8/10/12K-SG04LP3"
       ],
-      "notes": "mod=0 (LV) register/scale variant of ha-solarman's deye_p3.yaml. Cross-checked address-for-address against evcc's batterytype:lv branch \u2014 exact match. battery_power sign flipped (scale -1) to the project convention, corroborated by three independent sources (ha-solarman raw value, evcc's own documented convention, and this repo's own verified deye_hybrid_native_equivalent.json applying the identical flip on the LP1 family's equivalent register).",
-      "sha256": "260ee1b2e54219ae607392b890a0c520bfafa51bd9f589db13fee9bb658e9a32"
+      "notes": "mod=0 (LV) register/scale variant of ha-solarman's deye_p3.yaml. Cross-checked address-for-address against evcc's batterytype:lv branch — exact match. battery_power sign flipped (scale -1) to the project convention, corroborated by three independent sources (ha-solarman raw value, evcc's own documented convention, and this repo's own verified deye_hybrid_native_equivalent.json applying the identical flip on the LP1 family's equivalent register).",
+      "sha256": "4602c55910c4139644a91f3c8d05449049a00a1924d82ff6df6b521df37aa494"
     },
     {
       "vendor": "Deye",
       "file": "maps/deye_sg01hp3.json",
-      "label": "Deye SG01HP3/SG04HP3 \u2014 3-phase HV hybrid (pre-firmware-1098 scaling)",
+      "label": "Deye SG01HP3/SG04HP3 — 3-phase HV hybrid (pre-firmware-1098 scaling)",
       "status": "unverified",
       "source": [
         "https://github.com/davidrapan/ha-solarman/blob/ac1d88b83268beeb0511b8a1b7fc8e17deddc044/custom_components/solarman/inverter_definitions/deye_p3.yaml",
@@ -66,8 +66,8 @@
         "SUN-5..25K-SG01HP3-EU-AM2",
         "SG04HP3"
       ],
-      "notes": "mod=1 (HV) register/scale variant \u2014 same addresses as deye_sg04lp3.json, PV/battery power scale x10. Targets HV inverters on firmware older than 1098; evcc documents a third firmware1098+ variant with a different energy-counter scale (0.1 -> 1) that is NOT covered by this map \u2014 verify your inverter's firmware version before use, or the energy counters will read 10x low.",
-      "sha256": "f2a50ef156056d484717bd553444884ddcff8283ee616db8e10a39afc336c4f6"
+      "notes": "mod=1 (HV) register/scale variant — same addresses as deye_sg04lp3.json, PV/battery power scale x10. Targets HV inverters on firmware older than 1098; evcc documents a third firmware1098+ variant with a different energy-counter scale (0.1 -> 1) that is NOT covered by this map — verify your inverter's firmware version before use, or the energy counters will read 10x low.",
+      "sha256": "e8d56952f74f923abc2a3a61960036628e11d555b838dd9a3a2129e60eb1a503"
     },
     {
       "vendor": "Deye",
@@ -83,8 +83,8 @@
         "SUN-M80G3",
         "SUN-2000G3"
       ],
-      "notes": "No grid/battery/load telemetry on this device class (grid-tied PV-only microinverter) \u2014 pv_power (aggregate AC output) plus PV energy counters only. Per-string PV power omitted: only per-string voltage/current registers exist, and computing power from V*I would be a derived value, not a traced register.",
-      "sha256": "c808a210490bd2bf00660245fabb5b7639f2f700649b9e583f50437186af1a83"
+      "notes": "No grid/battery/load telemetry on this device class (grid-tied PV-only microinverter) — pv_power (aggregate AC output) plus PV energy counters only. Per-string PV power omitted: only per-string voltage/current registers exist, and computing power from V*I would be a derived value, not a traced register.",
+      "sha256": "f3e8b2c85f4471aec4b59b0e6e6e0ebfd3655ed648d0435e8fa98c2acdfc18a5"
     },
     {
       "vendor": "Growatt",
@@ -100,8 +100,8 @@
         "MOD TL3-XH",
         "SPH TL3-BH-UP"
       ],
-      "notes": "IMPORTANT: this protocol generation has no native single signed grid_power or battery_power register \u2014 only always-non-negative accumulator pairs (grid_import_power/grid_export_power, battery_charge_power/battery_discharge_power). This map ships those raw pairs under non-canonical names; esp32_coordinator's InverterMapReader has no A-minus-B computed-field feature yet, so this map is TELEMETRY ONLY until that's added \u2014 the surplus control law will not drive off this inverter via this map (same as any map missing a canonical grid_power). Conflicts with the pre-existing growatt_sph6000.json on several addresses (grid_voltage, grid_frequency, load_power) \u2014 this map's addresses are the ones independently confirmed by two sources; growatt_sph6000.json's are unverified.",
-      "sha256": "24c00d9124ae4389be697260f7e53bfc3f840b3e2bf629394ccffc1b51bac16b"
+      "notes": "IMPORTANT: this protocol generation has no native single signed grid_power or battery_power register — only always-non-negative accumulator pairs (grid_import_power/grid_export_power, battery_charge_power/battery_discharge_power). This map ships those raw pairs under non-canonical names; esp32_coordinator's InverterMapReader has no A-minus-B computed-field feature yet, so this map is TELEMETRY ONLY until that's added — the surplus control law will not drive off this inverter via this map (same as any map missing a canonical grid_power). Conflicts with the pre-existing growatt_sph6000.json on several addresses (grid_voltage, grid_frequency, load_power) — this map's addresses are the ones independently confirmed by two sources; growatt_sph6000.json's are unverified.",
+      "sha256": "893f213c16c615bd407748e98aad87c161d1aebae99f96ed53c0b8516c63a0a4"
     },
     {
       "vendor": "Growatt",
@@ -116,8 +116,8 @@
         "SPH 3000-10000TL-BL",
         "SPH 4000-10000TL3 BH-UP"
       ],
-      "notes": "Same grid_power/battery_power limitation as growatt_hybrid_gen4.json (see its notes) \u2014 this protocol generation also has no native signed combined register, only import/export and charge/discharge pairs. Telemetry only.",
-      "sha256": "f07b31c4f004412273a02693321dd7be0b254f30928aa74a5f7790171e5d4833"
+      "notes": "Same grid_power/battery_power limitation as growatt_hybrid_gen4.json (see its notes) — this protocol generation also has no native signed combined register, only import/export and charge/discharge pairs. Telemetry only.",
+      "sha256": "0619fe0f8d6efc80ef622de42880c92ec0667b5c3a05f73ee0f075c58d4fd874"
     },
     {
       "vendor": "Solis",
@@ -132,8 +132,8 @@
         "RHI",
         "RAI hybrid series"
       ],
-      "notes": "RTU, 9600 baud, slave id 1 (evcc default for this template). A separate 'Solis string/PV-only' variant was investigated but not shipped \u2014 its meter register addressing could not be cross-verified and was excluded per the no-invention rule, not a distinct series worth a second file yet.",
-      "sha256": "0a9ff3aef8c423135d6c3f4a6c6080ea86d1cc12a449b02da1ee91f9467a72e5"
+      "notes": "RTU, 9600 baud, slave id 1 (evcc default for this template). A separate 'Solis string/PV-only' variant was investigated but not shipped — its meter register addressing could not be cross-verified and was excluded per the no-invention rule, not a distinct series worth a second file yet.",
+      "sha256": "b5c7fb238d69e94e25d6a57f5c028f3a4d42f9e8f0b45fe835a868180e25d040"
     },
     {
       "vendor": "Sofar",
@@ -149,8 +149,8 @@
         "HYD 3-6K-EP",
         "SOFAR 5-24KTL-G3"
       ],
-      "notes": "G3 protocol only (LSW3/LSE3 logger, TCP port 8899, FC3/holding registers) \u2014 the older pre-G3 Sofar protocol (plugin_sofar_old.py) uses a completely different address set and is not covered. battery_power's sign convention was cross-checked against evcc for the per-pack register (0x606) but extrapolated (same file/section/naming pattern, not independently re-verified) to the aggregate 'Battery Power Total' register (0x667) actually used here \u2014 flagged as lower-confidence than the rest of this map.",
-      "sha256": "3349df9fe07d45daa9971c77d244119d09099195a5c6ccc68ba405c22d92769c"
+      "notes": "G3 protocol only (LSW3/LSE3 logger, TCP port 8899, FC3/holding registers) — the older pre-G3 Sofar protocol (plugin_sofar_old.py) uses a completely different address set and is not covered. battery_power's sign convention was cross-checked against evcc for the per-pack register (0x606) but extrapolated (same file/section/naming pattern, not independently re-verified) to the aggregate 'Battery Power Total' register (0x667) actually used here — flagged as lower-confidence than the rest of this map.",
+      "sha256": "45f1e05f69ad869c506591f842d32337f68d28883f2e7f157a8e80f9d78f800f"
     },
     {
       "vendor": "Huawei",
@@ -164,8 +164,8 @@
         "SUN2000 series",
         "LUNA2000 battery"
       ],
-      "notes": "Sign convention confirmed IN-SOURCE (inline comments at registers.py:976-987: 'positive is importing/negative is exporting', 'positive is charging/negative is discharging') \u2014 already matches this project's required convention exactly, no scale flip needed. load_power/load_voltage and today_import/export_energy omitted: those registers exist in the source only under target_device=SDONGLE/EMMA (optional accessory hardware), not the base SUN2000.",
-      "sha256": "986347ac5bb01ec27fbca426ce2ed6004db062aac99a3ea671f20c06b3c150a7"
+      "notes": "Sign convention confirmed IN-SOURCE (inline comments at registers.py:976-987: 'positive is importing/negative is exporting', 'positive is charging/negative is discharging') — already matches this project's required convention exactly, no scale flip needed. load_power/load_voltage and today_import/export_energy omitted: those registers exist in the source only under target_device=SDONGLE/EMMA (optional accessory hardware), not the base SUN2000.",
+      "sha256": "b9d5206d6576b7277aebc52d5ee04a4f27c33b03e7e22170ffc97ea91921e660"
     },
     {
       "vendor": "Sungrow",
@@ -179,13 +179,13 @@
       "models": [
         "SH-series hybrid"
       ],
-      "notes": "grid_power's native register (5600, 'Meter active power') already reads positive=import per its own source comment, no flip needed; battery_power's native register (5213) is positive=discharging and was flipped (scale -1). All 32-bit fields use big_endian_word_swap per the source's 'swap: word' directive. load_voltage, today/total_load_energy, and per-string pv1/pv2_power were omitted \u2014 no matching raw register found (load energy only exists as an HA-side computed template, not a register).",
-      "sha256": "a29ede2aa52eb17f33b37c0097d817bd8527ac40d16bc9b0eb86eaa14d280913"
+      "notes": "grid_power's native register (5600, 'Meter active power') already reads positive=import per its own source comment, no flip needed; battery_power's native register (5213) is positive=discharging and was flipped (scale -1). All 32-bit fields use big_endian_word_swap per the source's 'swap: word' directive. load_voltage, today/total_load_energy, and per-string pv1/pv2_power were omitted — no matching raw register found (load energy only exists as an HA-side computed template, not a register).",
+      "sha256": "65d2f81236cc3ec7f5063e97dccb3185ea9525221d8f1b151f47f41efaf50858"
     },
     {
       "vendor": "Fronius",
       "file": "maps/fronius_symo_sunspec_int.json",
-      "label": "Fronius Symo/Primo \u2014 SunSpec int+SF (installer setting: \"SunSpec Model Type\" = int+SF)",
+      "label": "Fronius Symo/Primo — SunSpec int+SF (installer setting: \"SunSpec Model Type\" = int+SF)",
       "status": "unverified",
       "source": [
         "https://github.com/sunspec/models/blob/90b4a331dcca1d6eac69c1bead952fddcc5852e0/json/model_101.json",
@@ -196,13 +196,13 @@
         "Symo",
         "Primo (SunSpec Model Type: int+SF)"
       ],
-      "notes": "UNVERIFIED BASE ADDRESS: per-field offsets within each SunSpec model are exact (summed from the model JSON's own point sizes), but the ABSOLUTE addresses assume the common convention SunS-marker@40000 + Common-model-1 (68 regs) -> model 103 header@40070 with model 103 being the FIRST model after Common. This chain-position assumption is not verifiable without a live device or Fronius's own published register list and must be confirmed before production use (esp32_coordinator does not implement runtime SunSpec model-chain discovery). Meter unit id 240 could not be independently confirmed in either source repo (evcc treats it as a free user parameter) and traces only to this project's own pre-existing docs/INVERTER_MAP.md, itself uncited. grid_power sign (scale -1) is an assumption, not stated in the SunSpec source \u2014 verify against a live device. battery_power/soc omitted: SunSpec model 124 has no instantaneous power/SOC register, only RW setpoints. Requires the Fronius installer menu 'SunSpec Model Type' set to int+SF \u2014 the float variant (fronius_symo_sunspec_float.json) will silently misdecode if the setting doesn't match.",
-      "sha256": "936715e095010c8b8ea90d771401c07140ebd2293ddd0759cc21ad5102d206c5"
+      "notes": "UNVERIFIED BASE ADDRESS: per-field offsets within each SunSpec model are exact (summed from the model JSON's own point sizes), but the ABSOLUTE addresses assume the common convention SunS-marker@40000 + Common-model-1 (68 regs) -> model 103 header@40070 with model 103 being the FIRST model after Common. This chain-position assumption is not verifiable without a live device or Fronius's own published register list and must be confirmed before production use (esp32_coordinator does not implement runtime SunSpec model-chain discovery). Meter unit id 240 could not be independently confirmed in either source repo (evcc treats it as a free user parameter) and traces only to this project's own pre-existing docs/INVERTER_MAP.md, itself uncited. grid_power sign (scale -1) is an assumption, not stated in the SunSpec source — verify against a live device. battery_power/soc omitted: SunSpec model 124 has no instantaneous power/SOC register, only RW setpoints. Requires the Fronius installer menu 'SunSpec Model Type' set to int+SF — the float variant (fronius_symo_sunspec_float.json) will silently misdecode if the setting doesn't match.",
+      "sha256": "a42662d3767b77e13c4e9656c907a592cc9951fc018d49b3d93402512b9878ce"
     },
     {
       "vendor": "Fronius",
       "file": "maps/fronius_symo_sunspec_float.json",
-      "label": "Fronius Symo/Primo \u2014 SunSpec float (installer setting: \"SunSpec Model Type\" = float)",
+      "label": "Fronius Symo/Primo — SunSpec float (installer setting: \"SunSpec Model Type\" = float)",
       "status": "unverified",
       "source": [
         "https://github.com/sunspec/models/blob/90b4a331dcca1d6eac69c1bead952fddcc5852e0/json/model_111.json",
@@ -213,13 +213,13 @@
         "Symo",
         "Primo (SunSpec Model Type: float)"
       ],
-      "notes": "Same base-address/meter-unit-id/sign-convention caveats as fronius_symo_sunspec_int.json (see its notes) \u2014 this is the float-model twin, same offset-derivation method, no scale_register (float32 direct). Requires the Fronius installer menu 'SunSpec Model Type' set to float.",
-      "sha256": "950abe2d84fbedaefe1548a910576053561c8cce1be422bf7e61907bc3deb06c"
+      "notes": "Same base-address/meter-unit-id/sign-convention caveats as fronius_symo_sunspec_int.json (see its notes) — this is the float-model twin, same offset-derivation method, no scale_register (float32 direct). Requires the Fronius installer menu 'SunSpec Model Type' set to float.",
+      "sha256": "8d364158ff961a7877f2dcf535eb1b203fa65468a319aa16ca0ae1b9c0785d8e"
     },
     {
       "vendor": "SMA",
       "file": "maps/sma_native.json",
-      "label": "SMA \u2014 native Modbus profile (unit 3, 30xxx range)",
+      "label": "SMA — native Modbus profile (unit 3, 30xxx range)",
       "status": "unverified",
       "source": [
         "https://github.com/evcc-io/evcc/blob/a3a34410f8502d6db44a3ba07b83ab69928274e9/templates/definition/meter/sma-hybrid.yaml",
@@ -228,13 +228,13 @@
       "models": [
         "SMA Sunny Boy / Sunny Island / Sunny Tripower (native profile)"
       ],
-      "notes": "grid_power (register 30775, GridMs.TotW) already reads positive=import natively \u2014 matches the required convention directly, no scale flip needed. battery_power could NOT be sourced as one signed register: SMA's native profile splits it into two unsigned registers (charge/discharge), shipped here under non-canonical names (battery_charge_power/battery_discharge_power) \u2014 same computed-field limitation as the Growatt maps (grid_power IS available here, only battery_power is split). total_export_energy (register 30513) exists and is well-sourced but was excluded: it is a 64-bit accumulator and esp32_coordinator's schema has no 64-bit data_type. The int32 sentinel this firmware checks (0x80000000) covers SMA's primary native NaN; a secondary SMA sentinel (0x7FFFFFFF, per evcc's int32nan handling) is NOT currently caught by the firmware \u2014 worth a future firmware issue.",
+      "notes": "grid_power (register 30775, GridMs.TotW) already reads positive=import natively — matches the required convention directly, no scale flip needed. battery_power could NOT be sourced as one signed register: SMA's native profile splits it into two unsigned registers (charge/discharge), shipped here under non-canonical names (battery_charge_power/battery_discharge_power) — same computed-field limitation as the Growatt maps (grid_power IS available here, only battery_power is split). total_export_energy (register 30513) exists and is well-sourced but was excluded: it is a 64-bit accumulator and esp32_coordinator's schema has no 64-bit data_type. The int32 sentinel this firmware checks (0x80000000) covers SMA's primary native NaN; a secondary SMA sentinel (0x7FFFFFFF, per evcc's int32nan handling) is NOT currently caught by the firmware — worth a future firmware issue.",
       "sha256": "e3722d99b183b883439d7420199c6dc457c3d68b64fbd3100e28cac7bca0c8f2"
     },
     {
       "vendor": "SMA",
       "file": "maps/sma_sunspec.json",
-      "label": "SMA \u2014 SunSpec fallback (unit 126, int+SF)",
+      "label": "SMA — SunSpec fallback (unit 126, int+SF)",
       "status": "unverified",
       "source": [
         "https://github.com/sunspec/models/blob/90b4a331dcca1d6eac69c1bead952fddcc5852e0/json/model_1.json",
@@ -243,13 +243,13 @@
       "models": [
         "SMA devices without native-profile support"
       ],
-      "notes": "Same UNVERIFIED BASE ADDRESS caveat as the Fronius SunSpec maps (assumes SunS@40000, Common model first) \u2014 not verifiable without a live device. grid_power sign (scale -1) is inferred from general SunSpec/IEEE 1547 convention (inverter W is positive when generating), not stated in the source \u2014 verify before trusting. battery_power/soc/load_power omitted \u2014 out of scope for model 101/103 (inverter-only); would need storage model 124 or meter models 201-204. Prefer sma_native.json when the device supports it \u2014 this fallback is the last resort.",
+      "notes": "Same UNVERIFIED BASE ADDRESS caveat as the Fronius SunSpec maps (assumes SunS@40000, Common model first) — not verifiable without a live device. grid_power sign (scale -1) is inferred from general SunSpec/IEEE 1547 convention (inverter W is positive when generating), not stated in the source — verify before trusting. battery_power/soc/load_power omitted — out of scope for model 101/103 (inverter-only); would need storage model 124 or meter models 201-204. Prefer sma_native.json when the device supports it — this fallback is the last resort.",
       "sha256": "e12e420d7f71c007d9421aa9811a4a2502ed435a1d65c6a07da5987446f1c615"
     },
     {
       "vendor": "SolarEdge",
       "file": "maps/solaredge_sunspec.json",
-      "label": "SolarEdge \u2014 SunSpec (standard) + proprietary battery/meter float32 range",
+      "label": "SolarEdge — SunSpec (standard) + proprietary battery/meter float32 range",
       "status": "unverified",
       "source": [
         "https://github.com/sunspec/models/blob/90b4a331dcca1d6eac69c1bead952fddcc5852e0/json/model_101.json",
@@ -260,8 +260,8 @@
       "models": [
         "SolarEdge SunSpec-compliant inverters"
       ],
-      "notes": "Same UNVERIFIED BASE ADDRESS caveat as the Fronius/SMA SunSpec maps \u2014 not verifiable without a live device. Meter unit id collision unresolved: docs/INVERTER_MAP.md says SolarEdge meters use unit 1/2/3, but that doesn't disambiguate from the inverter's own default (also 1) \u2014 this map uses slave_id 1 for both. grid_power is the inverter's own AC output power (model 103 W), NOT a true net-import/export meter reading \u2014 genuine SunSpec-source polarity is CT-orientation-dependent and not stated in any cited source; treat with caution. battery_power/soc WERE found (not a gap) at SolarEdge's proprietary float32 registers 0xE174/0xE184 via evcc, no scale_register needed there. total_battery_charge/discharge_energy exist in evcc (0xE17A/0xE176) but are 64-bit \u2014 same schema limitation as SMA's total_export_energy, omitted.",
-      "sha256": "34c5d51febc0cc5784df306ed419ce62811fb4bb19e8e080ac287702cb364dab"
+      "notes": "Same UNVERIFIED BASE ADDRESS caveat as the Fronius/SMA SunSpec maps — not verifiable without a live device. Meter unit id collision unresolved: docs/INVERTER_MAP.md says SolarEdge meters use unit 1/2/3, but that doesn't disambiguate from the inverter's own default (also 1) — this map uses slave_id 1 for both. grid_power is the inverter's own AC output power (model 103 W), NOT a true net-import/export meter reading — genuine SunSpec-source polarity is CT-orientation-dependent and not stated in any cited source; treat with caution. battery_power/soc WERE found (not a gap) at SolarEdge's proprietary float32 registers 0xE174/0xE184 via evcc, no scale_register needed there. total_battery_charge/discharge_energy exist in evcc (0xE17A/0xE176) but are 64-bit — same schema limitation as SMA's total_export_energy, omitted.",
+      "sha256": "a5b523cdc6e45c40eae023f8ec22377cf5d95f68c2d255ab3887f693ff10ec74"
     },
     {
       "vendor": "Victron",
@@ -276,8 +276,8 @@
         "Cerbo GX",
         "Venus GX"
       ],
-      "notes": "Best-sourced map in this batch: registers come from Victron's OWN published register list (dbus_modbustcp's attributes.csv), not a third-party reverse-engineering project, cross-checked against evcc's independent driver. Both grid_power and battery_power already match the required sign convention natively, no flip needed. L1-only (registers 817/820 for load/grid, 850 for PV) \u2014 under-reports total power on 2/3-phase installs (L2/L3 sit at 818/819/821/822, not summed here, schema has no multi-register-sum feature). grid_voltage/frequency/PV-energy counters omitted: those live on services with a per-installation dynamic Modbus unit id, unsafe to hardcode.",
-      "sha256": "e8d7e1125be943063551d68563fb92a786ab52340a9c03038766620ffd5ebd43"
+      "notes": "Best-sourced map in this batch: registers come from Victron's OWN published register list (dbus_modbustcp's attributes.csv), not a third-party reverse-engineering project, cross-checked against evcc's independent driver. Both grid_power and battery_power already match the required sign convention natively, no flip needed. L1-only (registers 817/820 for load/grid, 850 for PV) — under-reports total power on 2/3-phase installs (L2/L3 sit at 818/819/821/822, not summed here, schema has no multi-register-sum feature). grid_voltage/frequency/PV-energy counters omitted: those live on services with a per-installation dynamic Modbus unit id, unsafe to hardcode.",
+      "sha256": "fedc0ad51a90056b88faacff0402636a14cf263a00a1b0bcbb05b3cf813889f2"
     },
     {
       "vendor": "Luxpower",
@@ -295,8 +295,8 @@
         "Luxpower SNA (off-grid/hybrid)",
         "EG4 6000XP / 18kPV and other Luxpower rebrands (same register layout)"
       ],
-      "notes": "Cross-checked across three independent community projects (see source, commit-pinned) \u2014 not confirmed on real hardware, hence unverified. RTU ONLY: the stock WiFi dongle speaks a proprietary framing wrapper, not plain Modbus/TCP. No native signed grid_power/battery_power register in this protocol \u2014 ships as unsigned split pairs (grid_export/import_power, battery_charge/discharge_power), telemetry-only, same limitation as the Growatt GEN3/4 maps. battery_soc omitted: input register 5 packs SOC (low byte) and SOH (high byte) into one word this schema can't decode. Full rationale: the map file's own notes field.",
-      "sha256": "c072c85af58f67d8ee59879b1cb4e7429a7b4f63973226261ff2f270602c4e1b"
+      "notes": "Cross-checked across three independent community projects (see source, commit-pinned) — not confirmed on real hardware, hence unverified. RTU ONLY: the stock WiFi dongle speaks a proprietary framing wrapper, not plain Modbus/TCP. No native signed grid_power/battery_power register in this protocol — ships as unsigned split pairs (grid_export/import_power, battery_charge/discharge_power), telemetry-only, same limitation as the Growatt GEN3/4 maps. battery_soc omitted: input register 5 packs SOC (low byte) and SOH (high byte) into one word this schema can't decode. Full rationale: the map file's own notes field.",
+      "sha256": "d35074a3fb579676a07c21c78bfaaf4aa65d9a60a0aec77b69f853d53ae3236f"
     }
   ]
 }
