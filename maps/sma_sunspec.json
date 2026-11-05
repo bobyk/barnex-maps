@@ -1,0 +1,14 @@
+{
+  "brand": "sma",
+  "model": "SunSpec fallback",
+  "protocol_version": "sma_sunspec_v1",
+  "created_at": "2026-09-18T00:00:00Z",
+  "transport": { "type": "tcp", "port": 502, "slave_id": 126, "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "grid_voltage", "address": 40080, "function_code": 3, "data_type": "uint16", "scale_register": 40083, "unit": "V", "access": "read" },
+    { "name": "grid_power", "address": 40084, "function_code": 3, "data_type": "int16", "scale": -1, "scale_register": 40085, "unit": "W", "access": "read" },
+    { "name": "grid_frequency", "address": 40086, "function_code": 3, "data_type": "uint16", "scale_register": 40087, "unit": "Hz", "access": "read" },
+    { "name": "total_pv_energy", "address": 40094, "function_code": 3, "data_type": "uint32", "scale_register": 40096, "unit": "Wh", "access": "read" },
+    { "name": "pv_power", "address": 40101, "function_code": 3, "data_type": "int16", "scale_register": 40102, "unit": "W", "access": "read" }
+  ]
+}

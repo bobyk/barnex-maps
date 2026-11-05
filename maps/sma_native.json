@@ -1,0 +1,16 @@
+{
+  "brand": "sma",
+  "model": "native SMA Modbus profile",
+  "protocol_version": "sma_native_v1",
+  "created_at": "2026-09-18T00:00:00Z",
+  "transport": { "type": "tcp", "port": 502, "slave_id": 3, "byte_order": "big_endian" },
+  "register_map": [
+    { "name": "grid_power", "address": 30775, "function_code": 4, "data_type": "int32", "scale": 1, "unit": "W", "access": "read" },
+    { "name": "battery_soc", "address": 30845, "function_code": 3, "data_type": "uint32", "scale": 1, "unit": "%", "access": "read" },
+    { "name": "total_import_energy", "address": 30581, "function_code": 3, "data_type": "int32", "scale": 0.001, "unit": "kWh", "access": "read" },
+    { "name": "pv1_power", "address": 30773, "function_code": 3, "data_type": "int32", "scale": 1, "unit": "W", "access": "read" },
+    { "name": "pv2_power", "address": 30961, "function_code": 3, "data_type": "int32", "scale": 1, "unit": "W", "access": "read" },
+    { "name": "battery_charge_power", "address": 31393, "function_code": 4, "data_type": "uint32", "scale": 1, "unit": "W", "access": "read" },
+    { "name": "battery_discharge_power", "address": 31395, "function_code": 4, "data_type": "uint32", "scale": 1, "unit": "W", "access": "read" }
+  ]
+}

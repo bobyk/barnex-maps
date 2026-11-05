@@ -1,0 +1,20 @@
+name: Validate maps
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate every inverter + charger map against the schema and check index hashes
+        # tools/update_index.py --check covers BOTH index.json (inverter
+        # maps) and chargers/index.json (charger maps) in one pass.
+        run: python3 tools/update_index.py --check
+      - name: Vendored Monocypher signing helper still builds
+        # tools/sign_map.py (charger maps only — inverter maps stay
+        # unsigned) shells out to this; a
+        # compile failure here would otherwise only surface the next time
+        # someone actually tries to sign a map.
+        run: cc -O2 -o /tmp/sign_monocypher_ci tools/sign_monocypher.c tools/monocypher.c
