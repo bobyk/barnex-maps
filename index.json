@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-05T17:39:11Z",
+  "updated_at": "2026-11-06T19:05:57Z",
   "maps": [
     {
       "vendor": "Deye",
@@ -41,17 +41,20 @@
     {
       "vendor": "Deye",
       "file": "maps/deye_sg04lp3.json",
-      "label": "Deye SG04LP3 — 3-phase LV hybrid",
+      "label": "Deye SG04LP3/SG05LP3 — 3-phase LV hybrid",
       "status": "unverified",
       "source": [
         "https://github.com/davidrapan/ha-solarman/blob/ac1d88b83268beeb0511b8a1b7fc8e17deddc044/custom_components/solarman/inverter_definitions/deye_p3.yaml",
-        "https://github.com/evcc-io/evcc/blob/a3a34410f8502d6db44a3ba07b83ab69928274e9/templates/definition/meter/deye-hybrid-3p.yaml"
+        "https://github.com/evcc-io/evcc/blob/a3a34410f8502d6db44a3ba07b83ab69928274e9/templates/definition/meter/deye-hybrid-3p.yaml",
+        "https://github.com/kellerza/sunsynk/blob/main/src/sunsynk/definitions/three_phase_common.py",
+        "https://github.com/user-attachments/files/16798469/MODBUS.RTU.V105.1-20231006.pdf"
       ],
       "models": [
-        "SUN-5/6/8/10/12K-SG04LP3"
+        "SUN-5/6/8/10/12K-SG04LP3",
+        "SUN-5..20K-SG05LP3 (incl. -EU-SM2)"
       ],
-      "notes": "mod=0 (LV) register/scale variant of ha-solarman's deye_p3.yaml. Cross-checked address-for-address against evcc's batterytype:lv branch — exact match. battery_power sign flipped (scale -1) to the project convention, corroborated by three independent sources (ha-solarman raw value, evcc's own documented convention, and this repo's own verified deye_hybrid_native_equivalent.json applying the identical flip on the LP1 family's equivalent register).",
-      "sha256": "4602c55910c4139644a91f3c8d05449049a00a1924d82ff6df6b521df37aa494"
+      "notes": "mod=0 (LV) variant of ha-solarman's deye_p3.yaml; v2 (2026-11-06) re-checked register-for-register against Deye's 3-phase Modbus protocol V105.1, ha-solarman deye_p3.yaml, kellerza/sunsynk three_phase_* and StephanJoubert deye_sg04lp3.yaml. v2 fixes load_power: 636 is the inverter output total, the load-side total is 653. Adds grid_relay (552 bit 2) and \"phases\": 3. Device type (holding 0) is 0x0005 on a real SG05LP3-EU-SM2 (PDF: 0x0500). battery_power sign flipped (scale -1) to the project convention (+charge/-discharge). Power values are 16-bit: fine below 32.7 kW at the meter.",
+      "sha256": "078d470907fa0ac1dcf8ae8276fc8a0a16cf2c247354803f1b051a7c03152f61"
     },
     {
       "vendor": "Deye",
@@ -60,14 +63,16 @@
       "status": "unverified",
       "source": [
         "https://github.com/davidrapan/ha-solarman/blob/ac1d88b83268beeb0511b8a1b7fc8e17deddc044/custom_components/solarman/inverter_definitions/deye_p3.yaml",
-        "https://github.com/evcc-io/evcc/blob/a3a34410f8502d6db44a3ba07b83ab69928274e9/templates/definition/meter/deye-hybrid-3p.yaml"
+        "https://github.com/evcc-io/evcc/blob/a3a34410f8502d6db44a3ba07b83ab69928274e9/templates/definition/meter/deye-hybrid-3p.yaml",
+        "https://github.com/kellerza/sunsynk/blob/main/src/sunsynk/definitions/three_phase_common.py",
+        "https://github.com/user-attachments/files/16798469/MODBUS.RTU.V105.1-20231006.pdf"
       ],
       "models": [
         "SUN-5..25K-SG01HP3-EU-AM2",
         "SG04HP3"
       ],
-      "notes": "mod=1 (HV) register/scale variant — same addresses as deye_sg04lp3.json, PV/battery power scale x10. Targets HV inverters on firmware older than 1098; evcc documents a third firmware1098+ variant with a different energy-counter scale (0.1 -> 1) that is NOT covered by this map — verify your inverter's firmware version before use, or the energy counters will read 10x low.",
-      "sha256": "e8d56952f74f923abc2a3a61960036628e11d555b838dd9a3a2129e60eb1a503"
+      "notes": "mod=1 (HV) register/scale variant — same addresses as deye_sg04lp3.json, PV/battery power scale x10. v2 (2026-11-06): load_power 636 (inverter output) -> 653 (load side), grid_relay (552 bit 2), \"phases\": 3. Targets HV inverters on firmware older than 1098; evcc documents a firmware 1098+ variant with a different energy-counter scale (0.1 -> 1) that is NOT covered by this map — verify your inverter's firmware version before use, or the energy counters will read 10x low.",
+      "sha256": "8b10f938b320a760fa8fe1720ca0b20b749c2b6a56e2112b5224db4b9f89c537"
     },
     {
       "vendor": "Deye",
