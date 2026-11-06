@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-09-22T00:00:00Z",
+  "updated_at": "2026-11-06T00:00:00Z",
   "chargers": [
     {
       "id": "eveus-current-1",
       "vendor": "eveus",
       "variant": "current",
-      "rev": 2,
+      "rev": 3,
       "file": "chargers/maps/eveus_current.json",
-      "sha256": "52c36ccd2c7622127cd0daa4bdfa24a0c04c337ba90f4eadc8a50de9f910dc53",
-      "sig": "74fefb9c4df9c4d3039fb60a687c2366d6b2a731c788b67acf25dc7be17fe541a6667ae2d359493f984660571b7ccbbed4df54e28d661aeaa00f4d6d48ce910f",
+      "sha256": "bd9b22df1035792cfe50a3ec48c0bb7be61c86473c9c1a49177e7777e70e71bd",
+      "sig": "c314a715527dec4cfe807e288a62eb877b5bf58d93d12fe0206315790d3010c197e363510a4881af32cf25c06dd4fbff519c422ae3e63561fa623f4e27ac1608",
       "verified": true,
-      "label": "Eveus Pro / Energy Star \u2014 current API (R3.02.9 / R3.05.x)",
+      "label": "Eveus Pro (R3.01.8 to R3.05.x)",
       "detect_summary": {
         "probe": {
-          "method": "GET",
+          "method": "POST",
           "path": "/main"
         },
         "all": [
@@ -33,15 +33,15 @@
       "id": "eveus-legacy-1",
       "vendor": "eveus",
       "variant": "legacy",
-      "rev": 2,
+      "rev": 3,
       "file": "chargers/maps/eveus_legacy.json",
-      "sha256": "5fdb7a184ae449ef1b05cead66ca262dedc3fd072c1d867d711919c58e51b32a",
+      "sha256": "36d43675b6ff17b8f7ca2189b9b2bae438d18aa6d2d319e435ac4df4890a5da7",
       "sig": "",
       "verified": false,
-      "label": "Eveus Energy Star \u2014 legacy API (R3.02.x and earlier)",
+      "label": "EnergyStar V5.x (old, read-only)",
       "detect_summary": {
         "probe": {
-          "method": "GET",
+          "method": "POST",
           "path": "/main"
         },
         "all": [
@@ -50,7 +50,7 @@
             "exists": true
           },
           {
-            "json": "state",
+            "json": "voltKoef1",
             "exists": true
           }
         ],

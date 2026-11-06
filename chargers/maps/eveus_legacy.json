@@ -3,15 +3,15 @@
   "kind": "charger",
   "vendor": "eveus",
   "variant": "legacy",
-  "rev": 2,
-  "model_hint": "Eveus Energy Star, legacy API (firmware R3.02.x and earlier)",
+  "rev": 3,
+  "model_hint": "Eveus / EnergyStar, pre-rebrand firmware EnergyStar V5.x (no verFW* in /main)",
   "verified": false,
   "transport": { "type": "http", "port": 80, "auth": "basic" },
   "detect": {
-    "probe": { "method": "GET", "path": "/main" },
+    "probe": { "method": "POST", "path": "/main" },
     "all": [
       { "json": "currentSet", "exists": true },
-      { "json": "state", "exists": true }
+      { "json": "voltKoef1", "exists": true }
     ],
     "none": [
       { "json": "verFWWifi", "exists": true }
@@ -19,20 +19,24 @@
   },
   "auth_check": { "method": "GET", "path": "/", "ok": [200], "bad": [401], "default_creds": [] },
   "ident": {
-    "serial": ["serialNum", "stationId"],
-    "fw": ["verFWMain"],
+    "serial": [],
+    "fw": [],
     "model": []
   },
-  "poll": { "method": "GET", "path": "/main", "min_interval_ms": 1000 },
+  "poll": { "method": "POST", "path": "/main", "min_interval_ms": 1000 },
   "read": {
     "state": "state",
-    "set_a": { "key": "currentSet", "scale": 0.1 },
+    "set_a": "currentSet",
     "meas_a": { "key": "curMeas1", "scale": 0.1 },
     "volt": "voltMeas1",
     "session_kwh": { "key": "sessionEnergy", "scale": 0.1 },
     "temp_c": "temperature1",
     "enabled": { "key": "evseEnabled", "invert": false }
   },
-  "states": { "2": "A", "3": "B", "4": "C", "5": "B", "6": "B", "7": "E" },
-  "quirks": { "skip_polls_after_write": 2, "single_connection": true }
+  "states": {
+    "12": "A", "9": "B", "13": "B", "6": "C",
+    "14": "E", "15": "E", "16": "E", "17": "E", "18": "E",
+    "19": "E", "20": "E", "21": "E", "22": "E"
+  },
+  "quirks": { "single_connection": true }
 }

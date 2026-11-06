@@ -45,18 +45,18 @@ shortened:
   "kind": "charger",
   "vendor": "eveus",
   "variant": "current",
-  "rev": 2,
-  "model_hint": "Eveus Pro / Energy Star, current API",
+  "rev": 3,
+  "model_hint": "Eveus Pro, Wi-Fi firmware GRW001A / 1PGRW001A / 3PGRW001A, R3.01.8 to R3.05.x",
   "verified": true,
   "transport": { "type": "http", "port": 80, "auth": "basic" },
   "detect": {
-    "probe": { "method": "GET", "path": "/main" },
+    "probe": { "method": "POST", "path": "/main" },
     "all":  [ { "json": "verFWWifi", "exists": true }, { "json": "currentSet", "exists": true } ],
     "none": []
   },
   "auth_check": { "method": "GET", "path": "/", "ok": [200], "bad": [401] },
   "ident": { "serial": ["serialNum", "stationId"], "fw": ["verFWMain", "verFWWifi"], "model": ["model"] },
-  "poll": { "method": "GET", "path": "/main", "min_interval_ms": 1000 },
+  "poll": { "method": "POST", "path": "/main", "min_interval_ms": 1000 },
   "read": {
     "state": "state",
     "set_a": "currentSet",
@@ -118,6 +118,18 @@ Rules:
 Different firmware generations of one vendor are **separate variant files**
 told apart by `detect` (see how `eveus_legacy` uses `none` on `verFWWifi`),
 not one file with branches.
+
+Tell generations apart by what the device actually sends, not by version
+numbers. For Eveus, every firmware that reports `verFWWifi` (Wi-Fi firmware
+`GRW001A`, later `1PGRW001A`/`3PGRW001A`, R3.01.8 and newer) uses the current
+API. The legacy API belongs to the pre-rebrand **EnergyStar V5.x** firmware,
+which reports no `verFW*` at all and has calibration keys (`voltKoef1`, ...)
+in `/main`. That firmware uses its own `state` enum (12 ready, 9 car
+connected, 6 charging), sends current and energy as integers ×0.1 (but not
+`currentSet`), sends no power reading, answers every write with an empty body
+and has no stop command, so its map stays read-only.
+
+Eveus reads `/main` with `POST`, as its own web interface does.
 
 ### `auth_check`
 
@@ -196,8 +208,8 @@ Optional. Only `set_current` and `set_enabled`:
       "sha256": "<sha256 of the file bytes>",
       "sig": "<128 hex chars, or \"\" for a read-only map>",
       "verified": true,
-      "label": "Eveus Pro / Energy Star — current API",
-      "detect_summary": { "probe": { "method": "GET", "path": "/main" }, "all": [ ... ], "none": [ ... ] }
+      "label": "Eveus Pro (R3.01.8 to R3.05.x)",
+      "detect_summary": { "probe": { "method": "POST", "path": "/main" }, "all": [ ... ], "none": [ ... ] }
     }
   ]
 }

@@ -55,8 +55,8 @@ them on a real inverter.
 
 | Vendor | Map | Control |
 |---|---|---|
-| Eveus Pro / Energy Star, current API (R3.02.9 / R3.05.x) | `eveus_current.json` | read + set current / pause, **signed**, verified |
-| Eveus Energy Star, legacy API (R3.02.x and earlier) | `eveus_legacy.json` | read-only |
+| Eveus Pro, firmware R3.01.8 to R3.05.x (reports `verFWWifi`) | `eveus_current.json` | read + set current / pause, **signed**, verified |
+| Eveus / EnergyStar, old firmware EnergyStar V5.x | `eveus_legacy.json` | read-only (this firmware has no stop command) |
 
 ## Contributing
 
