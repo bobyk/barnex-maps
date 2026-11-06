@@ -3,12 +3,12 @@
   "kind": "charger",
   "vendor": "eveus",
   "variant": "current",
-  "rev": 2,
-  "model_hint": "Eveus Pro / Energy Star, current API (firmware R3.02.9 / R3.05.x)",
+  "rev": 3,
+  "model_hint": "Eveus Pro, Wi-Fi firmware GRW001A / 1PGRW001A / 3PGRW001A, R3.01.8 to R3.05.x",
   "verified": true,
   "transport": { "type": "http", "port": 80, "auth": "basic" },
   "detect": {
-    "probe": { "method": "GET", "path": "/main" },
+    "probe": { "method": "POST", "path": "/main" },
     "all": [
       { "json": "verFWWifi", "exists": true },
       { "json": "currentSet", "exists": true }
@@ -21,7 +21,7 @@
     "fw": ["verFWMain", "verFWWifi"],
     "model": ["model"]
   },
-  "poll": { "method": "GET", "path": "/main", "min_interval_ms": 1000 },
+  "poll": { "method": "POST", "path": "/main", "min_interval_ms": 1000 },
   "read": {
     "state": "state",
     "set_a": "currentSet",
