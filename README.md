@@ -29,7 +29,7 @@ not both, unless it changes shared tooling.
 
 | Vendor | Detected automatically | Maps |
 |---|---|---|
-| Deye | yes | native-equivalent (**verified**), SG04LP3, SG01HP3/SG04HP3, microinverter |
+| Deye | yes | native-equivalent (**verified**), SG04LP3/SG05LP3, SG01HP3/SG04HP3, microinverter |
 | Growatt | yes (low confidence) | SPH-6000 (legacy), GEN4, GEN3 hybrid (telemetry only, see notes) |
 | Victron | yes | Cerbo/Venus GX |
 | Luxpower | no | LXP/SNA hybrid (EG4 and other rebrands), RTU only |

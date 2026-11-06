@@ -45,6 +45,7 @@ That is why inverter maps are not signed and charger maps with commands are
 | `protocol_version` | no | free text, up to 19 characters, e.g. `RTU_II` |
 | `created_at` | no | ISO 8601 author timestamp; must parse if present |
 | `checksum` | no | content hash, see [Checksum](#checksum) |
+| `phases` | no | `1` or `3`. A Deye whose device-type register (holding 0) says three-phase is only polled through a map that declares `"phases": 3`; the firmware ships the two Deye three-phase maps built in and applies them by device type |
 | `transport` | yes | see below |
 | `register_map` | yes | 1 to 48 entries, at least one readable |
 

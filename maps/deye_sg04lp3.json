@@ -1,15 +1,27 @@
 {
   "brand": "deye",
-  "model": "SG04LP3 3-phase LV",
-  "protocol_version": "deye_sg04lp3_v1",
-  "created_at": "2026-09-18T14:25:00Z",
+  "model": "SG04LP3/SG05LP3 3-phase LV",
+  "protocol_version": "deye_sg04lp3_v2",
+  "created_at": "2026-11-06T12:00:00Z",
+  "phases": 3,
   "transport": {
     "type": "tcp",
     "port": 8899,
     "slave_id": 1,
-    "byte_order": "big_endian"
+    "byte_order": "big_endian",
+    "merge_gap": 40
   },
   "register_map": [
+    {
+      "name": "grid_relay",
+      "address": 552,
+      "function_code": 3,
+      "data_type": "uint16",
+      "bit": 2,
+      "scale": 1,
+      "unit": "",
+      "access": "read"
+    },
     {
       "name": "grid_voltage",
       "address": 598,
@@ -48,7 +60,7 @@
     },
     {
       "name": "load_power",
-      "address": 636,
+      "address": 653,
       "function_code": 3,
       "data_type": "int16",
       "scale": 1,
@@ -235,5 +247,6 @@
       "min_refresh_s": 300,
       "byte_order": "big_endian_word_swap"
     }
-  ]
+  ],
+  "checksum": "286bcd818d270c6fac5efc59c4a0d51ca1adaa73b2e1b5dade67d4d2bfc9830c"
 }
