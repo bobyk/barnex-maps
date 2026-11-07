@@ -70,7 +70,7 @@ That is why inverter maps are not signed and charger maps with commands are
 | `function_code` | yes | 3 or 4 for readable entries (6/16 are kept but never sent) |
 | `data_type` | yes | `uint16`/`u16`, `int16`/`i16`/`s16`, `uint32`/`u32`, `int32`/`i32`/`s32`, `float`/`float32`/`f32` (IEEE-754, two registers) |
 | `scale` | no (1) | non-zero finite multiplier, applied before `scale_register` |
-| `unit` | no | `W`/`kW`, `Wh`/`kWh`/`MWh`, `V`/`mV`/`kV`, `Hz`, `%`; converted to the canonical unit |
+| `unit` | no | `W`/`kW`, `Wh`/`kWh`/`MWh`, `V`/`mV`/`kV`, `A`/`mA`, `Hz`, `%`; converted to the canonical unit |
 | `access` | no (`read`) | `read`, `write`, `read_write` |
 | `byte_order` | no | per-entry override of the transport default (32-bit types) |
 | `slave_id` | no | per-entry override, for several devices on one RS485 bus |
@@ -92,6 +92,15 @@ reader does:
 `today_battery_discharge_energy` · `total_battery_charge_energy` ·
 `total_battery_discharge_energy` · `grid_relay` (1 = on grid) ·
 `grid_fault` (1 = **not** on grid, inverted polarity)
+
+Per phase (3-phase maps; L1 voltage is `grid_voltage`):
+`grid_power_l1` · `grid_power_l2` · `grid_power_l3` (W, **+import / −export**) ·
+`grid_voltage_l2` · `grid_voltage_l3` (V) ·
+`ct_int_current_l1` · `ct_int_current_l2` · `ct_int_current_l3` (internal CT, signed A) ·
+`ct_ext_current_l1` · `ct_ext_current_l2` · `ct_ext_current_l3` (external CT, signed A) ·
+`inverter_power_l1` · `inverter_power_l2` · `inverter_power_l3` (inverter output, W).
+The controller checks which CT set agrees with power/voltage and uses that one
+for the phase current; with neither it uses power/voltage alone.
 
 Aliases: `grid_active_power`, `meter_power`, `pv_total_power`, `solar_power`,
 `consumption_power`, `soc`, `grid_freq`, `grid_connected`, `grid_failure`.

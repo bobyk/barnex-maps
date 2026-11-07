@@ -1,8 +1,8 @@
 {
   "brand": "deye",
   "model": "SG01HP3 3-phase HV (mod=1)",
-  "protocol_version": "deye_sg01hp3_v2",
-  "created_at": "2026-11-06T12:00:00Z",
+  "protocol_version": "deye_sg01hp3_v3",
+  "created_at": "2026-11-07T12:00:00Z",
   "phases": 3,
   "transport": {
     "type": "tcp",
@@ -61,6 +61,132 @@
     {
       "name": "load_power",
       "address": 653,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_power_l1",
+      "address": 622,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_power_l2",
+      "address": 623,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_power_l3",
+      "address": 624,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage_l2",
+      "address": 599,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage_l3",
+      "address": 600,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "ct_int_current_l1",
+      "address": 610,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 0.01,
+      "unit": "A",
+      "access": "read"
+    },
+    {
+      "name": "ct_int_current_l2",
+      "address": 611,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 0.01,
+      "unit": "A",
+      "access": "read"
+    },
+    {
+      "name": "ct_int_current_l3",
+      "address": 612,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 0.01,
+      "unit": "A",
+      "access": "read"
+    },
+    {
+      "name": "ct_ext_current_l1",
+      "address": 613,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 0.01,
+      "unit": "A",
+      "access": "read"
+    },
+    {
+      "name": "ct_ext_current_l2",
+      "address": 614,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 0.01,
+      "unit": "A",
+      "access": "read"
+    },
+    {
+      "name": "ct_ext_current_l3",
+      "address": 615,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 0.01,
+      "unit": "A",
+      "access": "read"
+    },
+    {
+      "name": "inverter_power_l1",
+      "address": 633,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "inverter_power_l2",
+      "address": 634,
+      "function_code": 3,
+      "data_type": "int16",
+      "scale": 1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "inverter_power_l3",
+      "address": 635,
       "function_code": 3,
       "data_type": "int16",
       "scale": 1,
@@ -248,5 +374,5 @@
       "byte_order": "big_endian_word_swap"
     }
   ],
-  "checksum": "5547fc4bf7611a2c5faaa89fa1cf55a04e06d90976ddb65445bce47f257ed123"
+  "checksum": "bfba7d44b0ec2b951d40687944545eb195e455eac60ffc42f66c947c7e40778a"
 }

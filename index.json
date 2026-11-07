@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-06T19:05:57Z",
+  "updated_at": "2026-11-07T07:15:25Z",
   "maps": [
     {
       "vendor": "Deye",
@@ -53,8 +53,8 @@
         "SUN-5/6/8/10/12K-SG04LP3",
         "SUN-5..20K-SG05LP3 (incl. -EU-SM2)"
       ],
-      "notes": "mod=0 (LV) variant of ha-solarman's deye_p3.yaml; v2 (2026-11-06) re-checked register-for-register against Deye's 3-phase Modbus protocol V105.1, ha-solarman deye_p3.yaml, kellerza/sunsynk three_phase_* and StephanJoubert deye_sg04lp3.yaml. v2 fixes load_power: 636 is the inverter output total, the load-side total is 653. Adds grid_relay (552 bit 2) and \"phases\": 3. Device type (holding 0) is 0x0005 on a real SG05LP3-EU-SM2 (PDF: 0x0500). battery_power sign flipped (scale -1) to the project convention (+charge/-discharge). Power values are 16-bit: fine below 32.7 kW at the meter.",
-      "sha256": "078d470907fa0ac1dcf8ae8276fc8a0a16cf2c247354803f1b051a7c03152f61"
+      "notes": "mod=0 (LV) variant of ha-solarman's deye_p3.yaml; v2 (2026-11-06) re-checked register-for-register against Deye's 3-phase Modbus protocol V105.1, ha-solarman deye_p3.yaml, kellerza/sunsynk three_phase_* and StephanJoubert deye_sg04lp3.yaml. v2 fixes load_power: 636 is the inverter output total, the load-side total is 653. Adds grid_relay (552 bit 2) and \"phases\": 3. Device type (holding 0) is 0x0005 on a real SG05LP3-EU-SM2 (PDF: 0x0500). battery_power sign flipped (scale -1) to the project convention (+charge/-discharge). Power values are 16-bit: fine below 32.7 kW at the meter. v3 (2026-11-07): per-phase registers in the same read window — grid_power_l1..l3 (622-624), grid_voltage_l2/_l3 (599/600), ct_int_current_l1..l3 (610-612, 0.01 A), ct_ext_current_l1..l3 (613-615, 0.01 A), inverter_power_l1..l3 (633-635).",
+      "sha256": "608f44dbef45d82a0734bb750763a32538046bd53305bfc3e67609d2550fc67a"
     },
     {
       "vendor": "Deye",
@@ -71,8 +71,8 @@
         "SUN-5..25K-SG01HP3-EU-AM2",
         "SG04HP3"
       ],
-      "notes": "mod=1 (HV) register/scale variant — same addresses as deye_sg04lp3.json, PV/battery power scale x10. v2 (2026-11-06): load_power 636 (inverter output) -> 653 (load side), grid_relay (552 bit 2), \"phases\": 3. Targets HV inverters on firmware older than 1098; evcc documents a firmware 1098+ variant with a different energy-counter scale (0.1 -> 1) that is NOT covered by this map — verify your inverter's firmware version before use, or the energy counters will read 10x low.",
-      "sha256": "8b10f938b320a760fa8fe1720ca0b20b749c2b6a56e2112b5224db4b9f89c537"
+      "notes": "mod=1 (HV) register/scale variant — same addresses as deye_sg04lp3.json, PV/battery power scale x10. v2 (2026-11-06): load_power 636 (inverter output) -> 653 (load side), grid_relay (552 bit 2), \"phases\": 3. Targets HV inverters on firmware older than 1098; evcc documents a firmware 1098+ variant with a different energy-counter scale (0.1 -> 1) that is NOT covered by this map — verify your inverter's firmware version before use, or the energy counters will read 10x low. v3 (2026-11-07): per-phase registers in the same read window — grid_power_l1..l3 (622-624), grid_voltage_l2/_l3 (599/600), ct_int_current_l1..l3 (610-612, 0.01 A), ct_ext_current_l1..l3 (613-615, 0.01 A), inverter_power_l1..l3 (633-635).",
+      "sha256": "b6955ea23c048e085f3a5795451f591fe9bf8fcf4227e255386f71f288b01c7a"
     },
     {
       "vendor": "Deye",
