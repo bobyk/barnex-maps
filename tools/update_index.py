@@ -174,45 +174,131 @@ CHARGER_BLOCKED_SUBSTRINGS = [
     "evsetype", "typerelay", "groundctrl", "curdesign", "mincurrent", "cmax",
     "suspenderrors", "factoryreset", "systemtime", "timezone",
     "/config", "/configap", "/confighttp", "/init", "/ocppevent",
+    # schema 2 additions; the firmware applies the whole list to every path
+    # and every body (probe, poll and cmd) regardless of the map's schema
+    "disabled", "ground", "ocpp", "designedcurrent", "ssid", "password",
+    "firmware", "rfid",
 ]
 
+CHARGER_SCHEMAS = {1, 2}
+CHARGER_CONTENT_TYPES = {"form", "json"}
+# char[N] caps in the firmware's map types; usable length is cap - 1
+CHARGER_JSON_KEY_MAX = 48     # a JSON key or dotted path
+CHARGER_READ_ROOT_MAX = 48    # read_root
+CHARGER_BODY_TMPL_MAX = 160   # cmd.* body template (was 64 before schema 2)
+CHARGER_READ_BODY_MAX = 384   # detect.probe.body and poll.body
 
-def charger_path_allowed(path) -> str | None:
+
+def _blocklisted(text: str) -> str | None:
+    low = text.lower()
+    for term in CHARGER_BLOCKED_SUBSTRINGS:
+        if term in low:
+            return term
+    return None
+
+
+def charger_path_allowed(path, read: bool = False) -> str | None:
     """Returns an error string, or None if `path` passes every check
-    the firmware's charger-map path check applies."""
+    the firmware's charger-map path check applies. `read=True` for
+    detect.probe / auth_check / poll paths, which additionally may not
+    mention `mutation`."""
     if not isinstance(path, str) or not path.startswith("/"):
         return f"path must start with '/': {path!r}"
     if "://" in path:
         return f"path must not contain a scheme/host: {path!r}"
     if "\r" in path or "\n" in path:
         return "path must not contain CR/LF"
-    low = path.lower()
-    for term in CHARGER_BLOCKED_SUBSTRINGS:
-        if term in low:
-            return f"path contains blocklisted term {term!r}: {path!r}"
+    if "%" in path:
+        return "path must not contain '%' (a percent-escape would decode past the blocklist)"
+    if "?" in path or "#" in path:
+        return "path must not contain a query string or fragment ('?', '#')"
+    term = _blocklisted(path)
+    if term:
+        return f"path contains blocklisted term {term!r}: {path!r}"
+    if read and "mutation" in path.lower():
+        return f"read path must not mention 'mutation': {path!r}"
     return None
 
 
-def charger_body_template_ok(body) -> str | None:
-    """Mirrors the firmware's body-template check."""
+def _numeric_neighbour(c: str) -> bool:
+    return c.isdigit() or c in ".+-eE"
+
+
+def charger_body_template_ok(body, content_type: str = "form") -> str | None:
+    """Mirrors the firmware's cmd body-template check (form and json)."""
     if not isinstance(body, str) or not body:
         return "body template missing/empty"
-    if len(body) > 128:
-        return "body template over 128 bytes"
+    if len(body.encode()) > CHARGER_BODY_TMPL_MAX - 1:
+        return f"body template over {CHARGER_BODY_TMPL_MAX - 1} bytes"
     if "\r" in body or "\n" in body:
         return "body template must not contain CR/LF"
-    low = body.lower()
-    for term in CHARGER_BLOCKED_SUBSTRINGS:
-        if term in low:
-            return f"body template contains blocklisted term {term!r}"
+    term = _blocklisted(body)
+    if term:
+        return f"body template contains blocklisted term {term!r}"
     count = body.count("{v}")
     if count != 1:
         return f"body template must contain exactly one '{{v}}' (found {count})"
-    # No other "{...}" placeholder besides the one {v}.
-    rest = body.replace("{v}", "", 1)
-    if "{" in rest:
-        return "body template must not contain any placeholder other than {v}"
+    pos = body.index("{v}")
+    if (pos > 0 and _numeric_neighbour(body[pos - 1])) or \
+       (pos + 3 < len(body) and _numeric_neighbour(body[pos + 3])):
+        return ("'{v}' must not touch a digit, '.', '+', '-', 'e' or 'E' "
+                "('1{v}', '{v}0', '-{v}', '{v}e3' would change the number the firmware sends)")
+    if content_type == "json":
+        try:
+            json.loads(body.replace("{v}", "12345", 1))
+        except json.JSONDecodeError as e:
+            return f"json body template is not valid JSON once {{v}} is substituted: {e}"
+    else:
+        # No other "{...}" placeholder besides the one {v}.
+        rest = body.replace("{v}", "", 1)
+        if "{" in rest:
+            return "body template must not contain any placeholder other than {v}"
     return None
+
+
+def charger_read_body_ok(body, content_type: str) -> str | None:
+    """Mirrors the firmware's rule for detect.probe.body / poll.body: a static,
+    unsigned request that must never be able to carry a write."""
+    if not isinstance(body, str):
+        return "body must be a string"
+    if not body:
+        return None
+    if content_type != "json":
+        return "a probe/poll body is only allowed with content_type \"json\""
+    if len(body.encode()) > CHARGER_READ_BODY_MAX - 1:
+        return f"body over {CHARGER_READ_BODY_MAX - 1} bytes"
+    if "\r" in body or "\n" in body:
+        return "body must not contain CR/LF"
+    if "{v}" in body:
+        return "probe/poll body must be static (no {v})"
+    if "\\" in body or "%" in body:
+        return "body must not contain '\\' or '%' (escapes would decode past the blocklist)"
+    if "mutation" in body.lower():
+        return "probe/poll body must not mention 'mutation'"
+    term = _blocklisted(body)
+    if term:
+        return f"body contains blocklisted term {term!r}"
+    try:
+        json.loads(body)
+    except json.JSONDecodeError as e:
+        return f"body is not valid JSON: {e}"
+    return None
+
+
+def _json_path_ok(value, where: str, errors: list[str]) -> None:
+    if not isinstance(value, str) or not value:
+        errors.append(f"{where}: must be a non-empty key or dotted path")
+    elif len(value) > CHARGER_JSON_KEY_MAX - 1:
+        errors.append(f"{where}: over {CHARGER_JSON_KEY_MAX - 1} chars: {value!r}")
+
+
+def _content_type(spec: dict, where: str, schema: int, errors: list[str]) -> str:
+    ct = spec.get("content_type", "form")
+    if ct not in CHARGER_CONTENT_TYPES:
+        errors.append(f"{where}.content_type: must be one of {sorted(CHARGER_CONTENT_TYPES)}, got {ct!r}")
+    if schema == 1 and "content_type" in spec:
+        errors.append(f"{where}.content_type: schema 2 field in a schema 1 map")
+    return ct
 
 
 CHARGER_READ_SLOTS = {"state", "set_a", "meas_a", "volt", "power_w", "session_kwh", "enabled", "temp_c"}
@@ -235,8 +321,10 @@ def validate_charger_map(path: Path) -> list[str]:
 
     if doc.get("kind") != "charger":
         errors.append(f"'kind' must be \"charger\", got {doc.get('kind')!r}")
-    if doc.get("schema") != 1:
-        errors.append(f"unsupported 'schema' {doc.get('schema')!r} (only 1 is known)")
+    schema = doc.get("schema")
+    if schema not in CHARGER_SCHEMAS:
+        errors.append(f"unsupported 'schema' {schema!r} (known: {sorted(CHARGER_SCHEMAS)})")
+        schema = 1
     for key in ("vendor", "variant"):
         if not doc.get(key):
             errors.append(f"missing/empty top-level '{key}'")
@@ -245,13 +333,65 @@ def validate_charger_map(path: Path) -> list[str]:
     if transport.get("type") != "http":
         errors.append(f"transport.type must be \"http\" in v1, got {transport.get('type')!r}")
 
+    # schema 2 fields in a schema 1 map reject the whole map, so one file can
+    # never behave differently on firmware that knows only schema 1
+    if "read_root" in doc:
+        if schema == 1:
+            errors.append("read_root: schema 2 field in a schema 1 map")
+        root = doc["read_root"]
+        if not isinstance(root, str) or not root:
+            errors.append("read_root: must be a non-empty dotted path")
+        elif len(root) > CHARGER_READ_ROOT_MAX - 1:
+            errors.append(f"read_root: over {CHARGER_READ_ROOT_MAX - 1} chars")
+
+    # read requests: detect.probe, auth_check, poll — paths may not mention
+    # `mutation`, bodies are static JSON only
+    probe = (doc.get("detect") or {}).get("probe") or {}
+    if probe.get("path"):
+        err = charger_path_allowed(probe["path"], read=True)
+        if err:
+            errors.append(f"detect.probe.path: {err}")
+    if "body" in probe:
+        if schema == 1:
+            errors.append("detect.probe.body: schema 2 field in a schema 1 map")
+        ct = _content_type(probe, "detect.probe", schema, errors)
+        err = charger_read_body_ok(probe["body"], ct)
+        if err:
+            errors.append(f"detect.probe.body: {err}")
+    elif "content_type" in probe:
+        _content_type(probe, "detect.probe", schema, errors)
+    for rule_list in ("all", "none"):
+        for i, rule in enumerate((doc.get("detect") or {}).get(rule_list) or []):
+            if isinstance(rule, dict) and "json" in rule:
+                _json_path_ok(rule["json"], f"detect.{rule_list}[{i}].json", errors)
+
+    auth = doc.get("auth_check") or {}
+    if auth.get("path"):
+        err = charger_path_allowed(auth["path"], read=True)
+        if err:
+            errors.append(f"auth_check.path: {err}")
+
     poll = doc.get("poll") or {}
     if not poll.get("path"):
         errors.append("poll.path is required")
     else:
-        err = charger_path_allowed(poll["path"])
+        err = charger_path_allowed(poll["path"], read=True)
         if err:
             errors.append(f"poll.path: {err}")
+    if "body" in poll:
+        if schema == 1:
+            errors.append("poll.body: schema 2 field in a schema 1 map")
+        ct = _content_type(poll, "poll", schema, errors)
+        err = charger_read_body_ok(poll["body"], ct)
+        if err:
+            errors.append(f"poll.body: {err}")
+    elif "content_type" in poll:
+        _content_type(poll, "poll", schema, errors)
+
+    for group in ("serial", "fw", "model"):
+        aliases = (doc.get("ident") or {}).get(group) or []
+        for i, alias in enumerate(aliases if isinstance(aliases, list) else [aliases]):
+            _json_path_ok(alias, f"ident.{group}[{i}]", errors)
 
     read = doc.get("read") or {}
     if not read:
@@ -265,10 +405,17 @@ def validate_charger_map(path: Path) -> list[str]:
         if isinstance(value, dict):
             if not value.get("key"):
                 errors.append(f"read.{slot_name}: object form missing 'key'")
+            else:
+                _json_path_ok(value["key"], f"read.{slot_name}.key", errors)
             scale = value.get("scale", 1.0)
             if scale == 0:
                 errors.append(f"read.{slot_name}: scale must not be zero")
-        elif not isinstance(value, (str, list)) or not value:
+        elif isinstance(value, str) and value:
+            _json_path_ok(value, f"read.{slot_name}", errors)
+        elif isinstance(value, list) and value:
+            for i, alias in enumerate(value):
+                _json_path_ok(alias, f"read.{slot_name}[{i}]", errors)
+        else:
             errors.append(f"read.{slot_name}: must be a string, non-empty array, or object")
     if field_count > MAX_CHARGER_READ_FIELDS:
         errors.append(f"too many read fields ({field_count} > {MAX_CHARGER_READ_FIELDS})")
@@ -284,9 +431,20 @@ def validate_charger_map(path: Path) -> list[str]:
             err = charger_path_allowed(spec["path"])
             if err:
                 errors.append(f"cmd.{cmd_name}.path: {err}")
-        err = charger_body_template_ok(spec.get("body"))
+        ct = _content_type(spec, f"cmd.{cmd_name}", schema, errors)
+        err = charger_body_template_ok(spec.get("body"), ct)
         if err:
             errors.append(f"cmd.{cmd_name}.body: {err}")
+        ok_json = spec.get("ok_json")
+        if ok_json is not None:
+            if schema == 1:
+                errors.append(f"cmd.{cmd_name}.ok_json: schema 2 field in a schema 1 map")
+            if not isinstance(ok_json, dict) or "json" not in ok_json \
+                    or not ({"exists", "equals"} & set(ok_json)):
+                errors.append(f"cmd.{cmd_name}.ok_json: must be "
+                              f"{{\"json\": <path>, \"exists\": bool}} or {{\"json\": <path>, \"equals\": v}}")
+            else:
+                _json_path_ok(ok_json["json"], f"cmd.{cmd_name}.ok_json.json", errors)
         if cmd_name == "set_current":
             rng = spec.get("range")
             if not (isinstance(rng, list) and len(rng) == 2):
@@ -353,6 +511,12 @@ def process_chargers_index(args, problems: list[str]) -> tuple[bool, int]:
         # tools/sign_map.py to actually sign a map before publishing one
         # with `cmd` entries.
         doc = json.loads(map_path.read_text())
+        # The firmware reads `schema` from the index entry (default 1) and
+        # skips entries it does not understand before downloading the file,
+        # so the entry must say the same as the map.
+        if entry.get("schema", 1) != doc.get("schema", 1):
+            problems.append(f"{rel_path}: index 'schema' {entry.get('schema', 1)} differs from "
+                            f"the map's 'schema' {doc.get('schema', 1)}")
         has_cmd = bool((doc.get("cmd") or {}).get("set_current") or (doc.get("cmd") or {}).get("set_enabled"))
         if has_cmd and not entry.get("sig"):
             problems.append(
