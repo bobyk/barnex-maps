@@ -18,14 +18,20 @@ the rules are stricter than for [inverter maps](inverter-maps.md):
 - **The firmware limits the value.** The current sent is always inside the
   overlap of the map's `range`, the installer's min/max for that charger and
   the hardware limit. A map cannot send a number outside that overlap.
-- **Requests go only to the paired charger's IP.** `path` must start with
-  `/`, must not contain a scheme, host or CR/LF; the body is at most 128
-  bytes and has exactly one `{v}` placeholder.
+- **Requests go only to the paired charger's IP.** Every `path` (`detect.probe`,
+  `auth_check`, `poll`, `cmd.*`) must start with `/` and must not contain a
+  scheme, host, CR/LF, `%`, `?` or `#` (no query string: a GET with
+  `?currentSet=32` would be a write from an unsigned map). A `cmd` body is at
+  most 159 bytes and has exactly one `{v}` placeholder, and `{v}` may not touch
+  a digit, `.`, `+`, `-`, `e` or `E` (`1{v}`, `{v}0`, `-{v}` would change the
+  number the firmware sends).
 - **Service parameters are blocked.** Any mention of calibration, relay type,
   ground control, factory reset, time settings or config pages (`kC*`, `kV*`,
   `kCl`, `evseType`, `typeRelay`, `groundCtrl`, `curDesign`, `minCurrent`,
   `Cmax`, `suspendErrors`, `factoryReset`, `systemTime`, `timeZone`,
-  `/config*`, `/init`, `/ocppEvent`) rejects the whole map.
+  `/config*`, `/init`, `/ocppEvent`, and since schema 2 also `disabled`,
+  `ground`, `ocpp`, `designedCurrent`, `ssid`, `password`, `firmware`, `rfid`)
+  in any path or body rejects the whole map.
 - **No scripts or expressions.** Only the declarative rules below.
 - **Signature.** A map with a `cmd` section must be signed (see
   [Signing](#signing)). A read-only map needs no signature.
@@ -80,7 +86,7 @@ shortened:
 
 | field | required | notes |
 |---|---|---|
-| `schema` | yes | `1` |
+| `schema` | yes | `1` or `2` (see [Schema 2](#schema-2)) |
 | `kind` | yes | `"charger"` |
 | `vendor` | yes | lowercase vendor id, e.g. `eveus` |
 | `variant` | yes | protocol generation, e.g. `current`, `legacy` |
@@ -99,7 +105,8 @@ shortened:
 ### `detect`
 
 How the controller recognises the charger during a LAN scan. It sends
-`probe` (`method`, `path`) and checks the response:
+`probe` (`method`, `path`, and in schema 2 optionally `content_type` and a
+static `body`) and checks the response:
 
 - `all`: every rule must match.
 - `none`: no rule may match.
@@ -144,8 +151,8 @@ of key aliases; the first one present wins.
 
 ### `poll`
 
-`method`, `path` and `min_interval_ms` (default 1000). The response must be a
-JSON object.
+`method`, `path` and `min_interval_ms` (default 1000); in schema 2 also
+`content_type` and a static `body`. The response must be a JSON object.
 
 ### `read`
 
@@ -180,8 +187,9 @@ Optional. Only `set_current` and `set_enabled`:
 | field | notes |
 |---|---|
 | `method`, `path` | the request; `path` passes the rules above |
-| `body` | form body with exactly one `{v}` |
+| `body` | body with exactly one `{v}`; a form body by default, JSON with `content_type: "json"` (schema 2) |
 | `ok_body` | optional text the response must contain to count as success |
+| `ok_json` | schema 2: `{"json": "data.updateStationData", "equals": true}` — a rule on the JSON response that decides success; when present, `ok_body` is ignored |
 | `range` | `set_current` only, required: `[min, max]` amps, within 1–100 |
 | `on`, `off` | `set_enabled` only: values for `{v}` (default 1 and 0) |
 
@@ -191,6 +199,56 @@ Optional. Only `set_current` and `set_enabled`:
 |---|---|
 | `skip_polls_after_write` | polls to skip after a command, for chargers that answer stale data right after a write |
 | `single_connection` | the charger handles one HTTP connection at a time |
+
+## Schema 2
+
+Schema 2 adds JSON request bodies and nested responses for chargers with a
+JSON or GraphQL API. A map says `"schema": 2`; schema 1 maps are unchanged.
+A schema 2 field inside a `"schema": 1` map rejects the whole map, so one
+file can never behave differently on a controller that knows only schema 1.
+
+| field | where | notes |
+|---|---|---|
+| `content_type` | `detect.probe`, `poll`, `cmd.*` | `"form"` (default) or `"json"` (`Content-Type: application/json`) |
+| `body` | `detect.probe`, `poll` | a **static** request body: only with `content_type: "json"`, valid JSON, at most 383 bytes, no `{v}`, no `\` or `%`, and it may not mention `mutation`. Probe and poll are unsigned read requests, so they must never be able to carry a write |
+| `read_root` | top level | dotted path (e.g. `data.stationData`) prefixed to every `read`, `ident` and `detect` path. Paths are object keys joined by `.`; array indexes are not supported (a path into an array counts as missing). At most 47 chars, like every key or path |
+| `ok_json` | `cmd.*` | success rule on the JSON response, absolute path (no `read_root`) |
+
+A poll response without the `read_root` object (a GraphQL `{"errors": ...}`
+with HTTP 200, for example) or that is not JSON counts as a failed poll, not
+as "state 0", and feeds the five-failures rollback like a network error.
+
+Each `chargers/index.json` entry carries its own `schema`, so a controller
+skips maps it cannot read before downloading them. `schema_version` of the
+index itself stays 1.
+
+Example, [`chargers/maps/ladergy_graphql.json`](../chargers/maps/ladergy_graphql.json)
+(Ladergy / Svartex / Reve, one platform with a local GraphQL API), shortened:
+
+```json
+{
+  "schema": 2,
+  "kind": "charger",
+  "vendor": "ladergy",
+  "variant": "graphql",
+  "verified": false,
+  "transport": { "type": "http", "port": 80, "auth": "none" },
+  "detect": {
+    "probe": { "method": "POST", "path": "/graphql", "content_type": "json",
+               "body": "{\"query\":\"{stationData{serialInt stationState}}\"}" },
+    "all": [ { "json": "serialInt", "exists": true }, { "json": "stationState", "exists": true } ]
+  },
+  "read_root": "data.stationData",
+  "poll": { "method": "POST", "path": "/graphql", "content_type": "json",
+            "body": "{\"query\":\"{stationData{serialInt stationState stationCurrent measurements{curMeasurement1}}}\"}" },
+  "read": { "state": "stationState", "set_a": "stationCurrent", "meas_a": "measurements.curMeasurement1" }
+}
+```
+
+This map is read-only and `verified: false`: it was written from the
+platform's public web app, not tested on a real charger. Its `cmd` section
+(a GraphQL `mutation` on `stationCurrent` / `chargingCommand`) will be added
+and signed once someone confirms it on real hardware.
 
 ## `chargers/index.json`
 
@@ -210,12 +268,27 @@ Optional. Only `set_current` and `set_enabled`:
       "verified": true,
       "label": "Eveus Pro (R3.01.8 to R3.05.x)",
       "detect_summary": { "probe": { "method": "POST", "path": "/main" }, "all": [ ... ], "none": [ ... ] }
+    },
+    {
+      "id": "ladergy-graphql-1",
+      "schema": 2,
+      "vendor": "ladergy",
+      "variant": "graphql",
+      "rev": 1,
+      "file": "chargers/maps/ladergy_graphql.json",
+      "sha256": "<sha256 of the file bytes>",
+      "sig": "",
+      "verified": false,
+      "label": "Ladergy / Svartex / Reve, local GraphQL (read-only, unverified)",
+      "detect_summary": { "probe": { ... }, "all": [ ... ], "read_root": "data.stationData" }
     }
   ]
 }
 ```
 
-`detect_summary` repeats the map's `detect` so the controller can match
+`schema` (default 1) tells the controller which entries it can read; it must
+equal the map's own `schema` (the validator checks). `detect_summary` repeats
+the map's `detect` (plus `read_root` for schema 2) so the controller can match
 devices without downloading every map. Keep it identical to the map.
 
 ## How the controller uses a map

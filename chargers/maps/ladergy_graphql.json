@@ -1,0 +1,88 @@
+{
+  "schema": 2,
+  "kind": "charger",
+  "vendor": "ladergy",
+  "variant": "graphql",
+  "rev": 1,
+  "model_hint": "Ladergy / Svartex / Reve (one platform), local GraphQL API, web app V0.3.x, main FW 2.0.8+; read-only until verified",
+  "verified": false,
+  "transport": {
+    "type": "http",
+    "port": 80,
+    "auth": "none"
+  },
+  "detect": {
+    "probe": {
+      "method": "POST",
+      "path": "/graphql",
+      "content_type": "json",
+      "body": "{\"query\":\"{stationData{serialInt stationState}}\"}"
+    },
+    "all": [
+      {
+        "json": "serialInt",
+        "exists": true
+      },
+      {
+        "json": "stationState",
+        "exists": true
+      }
+    ]
+  },
+  "auth_check": {
+    "method": "GET",
+    "path": "/",
+    "ok": [
+      200
+    ],
+    "bad": [
+      401
+    ],
+    "default_creds": []
+  },
+  "read_root": "data.stationData",
+  "ident": {
+    "serial": [
+      "serialInt"
+    ],
+    "fw": [
+      "mainFWVersion",
+      "wifiFWVersion"
+    ],
+    "model": [
+      "model"
+    ]
+  },
+  "poll": {
+    "method": "POST",
+    "path": "/graphql",
+    "content_type": "json",
+    "body": "{\"query\":\"{stationData{serialInt mainFWVersion model stationState stationCurrent isChargerEnabled measurements{curMeasurement1 voltMeasurement1 powerMeasurement temperature{temperature1}} session{sessionEnergy}}}\"}",
+    "min_interval_ms": 5000
+  },
+  "read": {
+    "state": "stationState",
+    "set_a": "stationCurrent",
+    "meas_a": "measurements.curMeasurement1",
+    "volt": "measurements.voltMeasurement1",
+    "power_w": "measurements.powerMeasurement",
+    "session_kwh": "session.sessionEnergy",
+    "temp_c": "measurements.temperature.temperature1",
+    "enabled": {
+      "key": "isChargerEnabled",
+      "invert": false
+    }
+  },
+  "states": {
+    "0": "U",
+    "1": "B",
+    "2": "A",
+    "3": "C",
+    "4": "B",
+    "5": "E"
+  },
+  "quirks": {
+    "skip_polls_after_write": 1,
+    "single_connection": false
+  }
+}

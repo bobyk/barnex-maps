@@ -61,6 +61,37 @@
           }
         ]
       }
+    },
+    {
+      "id": "ladergy-graphql-1",
+      "schema": 2,
+      "vendor": "ladergy",
+      "variant": "graphql",
+      "rev": 1,
+      "file": "chargers/maps/ladergy_graphql.json",
+      "sha256": "52739dd2defc303febbaeb2c8b906f555dc6a56bf03685fa96d1559dc8b66135",
+      "sig": "",
+      "verified": false,
+      "label": "Ladergy / Svartex / Reve, local GraphQL (read-only, unverified)",
+      "detect_summary": {
+        "probe": {
+          "method": "POST",
+          "path": "/graphql",
+          "content_type": "json",
+          "body": "{\"query\":\"{stationData{serialInt stationState}}\"}"
+        },
+        "all": [
+          {
+            "json": "serialInt",
+            "exists": true
+          },
+          {
+            "json": "stationState",
+            "exists": true
+          }
+        ],
+        "read_root": "data.stationData"
+      }
     }
   ]
 }

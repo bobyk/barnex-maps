@@ -57,6 +57,7 @@ them on a real inverter.
 |---|---|---|
 | Eveus Pro, firmware R3.01.8 to R3.05.x (reports `verFWWifi`) | `eveus_current.json` | read + set current / pause, **signed**, verified |
 | Eveus / EnergyStar, old firmware EnergyStar V5.x | `eveus_legacy.json` | read-only (this firmware has no stop command) |
+| Ladergy / Svartex / Reve (local GraphQL API, web app V0.3.x) | `ladergy_graphql.json` | read-only, **unverified** (schema 2; written from the public web app, not yet tested on a real charger) |
 
 ## Contributing
 
