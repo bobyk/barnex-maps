@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "id": "feyree-evse-1",
+  "rev": 1,
+  "kind": "charger",
+  "verified": false,
+  "label": "Feyree EV charger (read-only, unverified)",
+  "match": {
+    "product_ids": [
+      "hytatexziwaifxj1",
+      "emvuyyax4lekiooj"
+    ]
+  },
+  "limits": {
+    "min_a": 6,
+    "max_a": 32,
+    "phases": 1
+  },
+  "read": {
+    "state": {
+      "dp": 101,
+      "type": "enum",
+      "map": {
+        "no_connect": "A",
+        "connect": "B",
+        "wait_charing": "B",
+        "wait_rfid": "B",
+        "finish": "B",
+        "charing": "C",
+        "error": "E"
+      }
+    },
+    "set_a": {
+      "dp": 102,
+      "type": "int"
+    },
+    "enabled": {
+      "dp": 112,
+      "type": "bool"
+    },
+    "power_w": {
+      "dp": 109,
+      "type": "int",
+      "scale": 100
+    },
+    "current_a": {
+      "dp": 108,
+      "type": "int",
+      "scale": 0.1
+    },
+    "voltage_v": {
+      "dp": 107,
+      "type": "int"
+    },
+    "session_kwh": {
+      "dp": 106,
+      "type": "int",
+      "scale": 0.1
+    },
+    "temp_c": {
+      "dp": 110,
+      "type": "int",
+      "scale": 0.1
+    },
+    "frequency": {
+      "dp": 5,
+      "type": "int"
+    }
+  }
+}

@@ -20,6 +20,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,6 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_PATH = ROOT / "index.json"
 CHARGERS_INDEX_PATH = ROOT / "chargers" / "index.json"
+TUYA_INDEX_PATH = ROOT / "tuya" / "index.json"
 
 VALID_DATA_TYPES = {
     "uint16", "u16", "int16", "i16", "s16",
@@ -532,6 +535,266 @@ def process_chargers_index(args, problems: list[str]) -> tuple[bool, int]:
     return changed, len(index.get("chargers", []))
 
 
+# ---------------------------------------------------------------------------
+# Tuya device profiles (tuya/index.json, tuya/profiles/*.json).
+# A profile maps a Tuya device's data point (DP) numbers to roles a controller
+# understands. The limits below are exact: client software parses these files
+# with a strict parser that must agree with this validator on every input.
+# See docs/tuya-profiles.md.
+# ---------------------------------------------------------------------------
+
+TUYA_MAX_BYTES = 4096
+TUYA_ROLES = ("state", "set_a", "enabled", "power_w", "current_a", "voltage_v",
+              "session_kwh", "temp_c")
+TUYA_TYPES = ("bool", "int", "enum", "str")
+TUYA_STATE_VALUES = ("A", "B", "C", "E")
+TUYA_TOP_KEYS = {"schema", "id", "rev", "kind", "verified", "label", "match",
+                 "limits", "read", "cmd", "quirks"}
+TUYA_ID_RE = re.compile(r"[a-z0-9-]{1,32}")
+TUYA_PRODUCT_ID_RE = re.compile(r"[0-9A-Za-z]{1,16}")
+
+
+def _is_int(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _is_num(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
+def parse_tuya_profile(raw: bytes):
+    """Strict JSON parse: rejects NaN/Infinity and duplicate keys.
+    Returns (doc, error); exactly one of them is None."""
+    def no_dups(pairs):
+        d = {}
+        for k, v in pairs:
+            if k in d:
+                raise ValueError(f"duplicate key {k!r}")
+            d[k] = v
+        return d
+
+    def no_const(name):
+        raise ValueError(f"non-finite number {name}")
+
+    try:
+        return json.loads(raw.decode("utf-8"), object_pairs_hook=no_dups,
+                          parse_constant=no_const), None
+    except (ValueError, UnicodeDecodeError) as e:
+        return None, f"not valid JSON: {e}"
+
+
+def _tuya_dp_spec(spec, where: str, errors: list[str], *, allow_scale: bool,
+                  allow_map: bool, types=TUYA_TYPES) -> None:
+    if not isinstance(spec, dict):
+        errors.append(f"{where}: must be an object")
+        return
+    allowed = {"dp", "type"} | ({"scale"} if allow_scale else set()) | ({"map"} if allow_map else set())
+    for k in spec:
+        if k not in allowed:
+            errors.append(f"{where}: unknown key {k!r}")
+    dp = spec.get("dp")
+    if not _is_int(dp) or not 1 <= dp <= 255:
+        errors.append(f"{where}.dp: must be an integer 1..255")
+    if spec.get("type") not in types:
+        errors.append(f"{where}.type: must be one of {list(types)}")
+    if "scale" in spec and allow_scale and not _is_num(spec["scale"]):
+        errors.append(f"{where}.scale: must be a finite number")
+
+
+def _tuya_enum_word(v, where: str, errors: list[str]) -> None:
+    if not isinstance(v, str) or not 1 <= len(v) <= 23:
+        errors.append(f"{where}: must be a string of 1..23 chars")
+
+
+def validate_tuya_profile(doc, raw_len: int) -> list[str]:
+    """Returns a list of errors (empty = valid). `raw_len` is the file size in bytes."""
+    errors: list[str] = []
+    if raw_len > TUYA_MAX_BYTES:
+        errors.append(f"file is {raw_len} bytes, limit is {TUYA_MAX_BYTES}")
+    if not isinstance(doc, dict):
+        return errors + ["top level must be an object"]
+    for k in doc:
+        if k not in TUYA_TOP_KEYS:
+            errors.append(f"unknown top-level key {k!r}")
+    if doc.get("schema") != 1 or not _is_int(doc.get("schema")):
+        errors.append("schema must be 1")
+    pid = doc.get("id")
+    if not isinstance(pid, str) or not TUYA_ID_RE.fullmatch(pid):
+        errors.append("id must match [a-z0-9-]{1,32}")
+    rev = doc.get("rev")
+    if not _is_int(rev) or not 1 <= rev <= 65535:
+        errors.append("rev must be an integer 1..65535")
+    kind = doc.get("kind")
+    if kind not in ("charger", "relay"):
+        errors.append("kind must be 'charger' or 'relay'")
+    if "verified" in doc and not isinstance(doc["verified"], bool):
+        errors.append("verified must be a boolean")
+    label = doc.get("label")
+    if not isinstance(label, str) or not 1 <= len(label) <= 64:
+        errors.append("label must be a string of 1..64 chars")
+
+    match = doc.get("match")
+    if not isinstance(match, dict) or set(match) != {"product_ids"}:
+        errors.append("match must be an object with exactly 'product_ids'")
+    else:
+        ids = match["product_ids"]
+        if not isinstance(ids, list) or not 1 <= len(ids) <= 8:
+            errors.append("match.product_ids must be a list of 1..8 items")
+        else:
+            for i in ids:
+                if not isinstance(i, str) or not TUYA_PRODUCT_ID_RE.fullmatch(i):
+                    errors.append(f"match.product_ids: {i!r} must match [0-9A-Za-z]{{1,16}}")
+
+    limits = doc.get("limits")
+    if limits is None:
+        if kind == "charger":
+            errors.append("limits is required for kind 'charger'")
+    elif not isinstance(limits, dict) or set(limits) != {"min_a", "max_a", "phases"}:
+        errors.append("limits must be an object with exactly min_a, max_a, phases")
+    else:
+        lo, hi, ph = limits["min_a"], limits["max_a"], limits["phases"]
+        if not _is_int(lo) or not 6 <= lo <= 32:
+            errors.append("limits.min_a must be an integer 6..32")
+        if not _is_int(hi) or not (_is_int(lo) and lo <= hi <= 80):
+            errors.append("limits.max_a must be an integer min_a..80")
+        if not _is_int(ph) or ph not in (1, 3):
+            errors.append("limits.phases must be 1 or 3")
+
+    read = doc.get("read")
+    if not isinstance(read, dict):
+        errors.append("read must be an object")
+    else:
+        for role, spec in read.items():
+            where = f"read.{role}"
+            if role not in TUYA_ROLES:
+                errors.append(f"{where}: unknown role")
+                continue
+            is_state = role == "state"
+            _tuya_dp_spec(spec, where, errors, allow_scale=not is_state, allow_map=is_state)
+            if is_state and isinstance(spec, dict):
+                if spec.get("type") != "enum":
+                    errors.append(f"{where}.type: must be 'enum'")
+                m = spec.get("map")
+                if not isinstance(m, dict) or not 1 <= len(m) <= 12:
+                    errors.append(f"{where}.map: must be an object with 1..12 entries")
+                else:
+                    for k, v in m.items():
+                        if not 1 <= len(k) <= 23:
+                            errors.append(f"{where}.map: key {k!r} must be 1..23 chars")
+                        if v not in TUYA_STATE_VALUES:
+                            errors.append(f"{where}.map[{k!r}]: must be one of {list(TUYA_STATE_VALUES)}")
+        if kind == "charger" and "state" not in read:
+            errors.append("read.state is required for kind 'charger'")
+
+    cmd = doc.get("cmd")
+    if cmd is not None:
+        if not isinstance(cmd, dict) or not cmd:
+            errors.append("cmd must be a non-empty object")
+        else:
+            for k, spec in cmd.items():
+                where = f"cmd.{k}"
+                if k == "set_a":
+                    _tuya_dp_spec(spec, where, errors, allow_scale=False, allow_map=False,
+                                  types=("int",))
+                elif k == "enable":
+                    if isinstance(spec, dict) and spec.get("type") == "enum":
+                        for kk in spec:
+                            if kk not in ("dp", "type", "on", "off"):
+                                errors.append(f"{where}: unknown key {kk!r}")
+                        dp = spec.get("dp")
+                        if not _is_int(dp) or not 1 <= dp <= 255:
+                            errors.append(f"{where}.dp: must be an integer 1..255")
+                        _tuya_enum_word(spec.get("on"), f"{where}.on", errors)
+                        _tuya_enum_word(spec.get("off"), f"{where}.off", errors)
+                    else:
+                        _tuya_dp_spec(spec, where, errors, allow_scale=False, allow_map=False,
+                                      types=("bool", "enum"))
+                else:
+                    errors.append(f"{where}: unknown command")
+
+    quirks = doc.get("quirks")
+    if quirks is not None:
+        if not isinstance(quirks, dict):
+            errors.append("quirks must be an object")
+        else:
+            for k, v in quirks.items():
+                if k != "reassert_set_a_on_plug":
+                    errors.append(f"quirks: unknown key {k!r}")
+                elif not isinstance(v, bool):
+                    errors.append("quirks.reassert_set_a_on_plug must be a boolean")
+    return errors
+
+
+def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
+    """Validates tuya/index.json and every profile it lists; refreshes sha256
+    unless --check. A profile with `cmd` needs a non-empty `sig` (made with
+    tools/sign_map.py); a read-only profile needs none. Returns
+    (changed, entry_count)."""
+    if not TUYA_INDEX_PATH.exists():
+        return False, 0
+    index = json.loads(TUYA_INDEX_PATH.read_text())
+    changed = False
+    claimed: dict[tuple[str, int], str] = {}
+
+    for entry in index.get("profiles", []):
+        rel_path = entry.get("file")
+        if not rel_path:
+            problems.append(f"tuya/index.json entry missing 'file': {entry}")
+            continue
+        path = ROOT / rel_path
+        if not path.exists():
+            problems.append(f"{rel_path}: referenced in tuya/index.json but does not exist")
+            continue
+        raw = path.read_bytes()
+        doc, err = parse_tuya_profile(raw)
+        errors = [err] if err else validate_tuya_profile(doc, len(raw))
+        if errors:
+            problems.append(f"{rel_path}: FAILED Tuya profile validation:")
+            problems.extend(f"    - {e}" for e in errors)
+            continue
+
+        computed = hashlib.sha256(raw).hexdigest()
+        declared = entry.get("sha256")
+        if computed != declared:
+            if args.check:
+                problems.append(f"{rel_path}: sha256 mismatch — index says {declared}, "
+                                f"actual file is {computed} (run without --check to fix)")
+            else:
+                entry["sha256"] = computed
+                changed = True
+                print(f"updated sha256 for {rel_path}")
+
+        for key, file_val in (("id", doc["id"]), ("rev", doc["rev"]), ("kind", doc["kind"]),
+                              ("schema", doc["schema"]),
+                              ("product_ids", doc["match"]["product_ids"])):
+            if entry.get(key) != file_val:
+                problems.append(f"{rel_path}: index {key!r} {entry.get(key)!r} differs from "
+                                f"the profile's {file_val!r}")
+
+        sig = entry.get("sig", "")
+        if not isinstance(sig, str):
+            problems.append(f"{rel_path}: index 'sig' must be a string")
+        elif "cmd" in doc and not sig:
+            problems.append(f"{rel_path}: has cmd but index 'sig' is empty — a profile that can "
+                            f"send commands must be signed; run tools/sign_map.py, or ship it "
+                            f"read-only (drop 'cmd')")
+
+        for pid in doc["match"]["product_ids"]:
+            other = claimed.get((pid, doc["rev"]))
+            if other is not None:
+                problems.append(f"{rel_path}: product id {pid} is also claimed by {other} "
+                                f"with the same rev {doc['rev']}")
+            else:
+                claimed[(pid, doc["rev"])] = rel_path
+
+    if not args.check and changed:
+        index["updated_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        TUYA_INDEX_PATH.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"wrote {TUYA_INDEX_PATH} (updated_at bumped)")
+
+    return changed, len(index.get("profiles", []))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true",
@@ -575,6 +838,7 @@ def main() -> int:
                 print(f"updated sha256 for {rel_path}")
 
     chargers_changed, chargers_count = process_chargers_index(args, problems)
+    tuya_changed, tuya_count = process_tuya_index(args, problems)
 
     if problems:
         print("\n".join(problems), file=sys.stderr)
@@ -583,16 +847,16 @@ def main() -> int:
 
     if args.check:
         print(f"OK — {len(index.get('maps', []))} inverter maps + {chargers_count} charger maps "
-              f"validated, all hashes current.")
+              f"+ {tuya_count} Tuya profiles validated, all hashes current.")
         return 0
 
     if changed:
         index["updated_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         INDEX_PATH.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"wrote {INDEX_PATH} (updated_at bumped)")
-    if not changed and not chargers_changed:
+    if not changed and not chargers_changed and not tuya_changed:
         print(f"OK — {len(index.get('maps', []))} inverter maps + {chargers_count} charger maps "
-              f"validated, all hashes already current.")
+              f"+ {tuya_count} Tuya profiles validated, all hashes already current.")
 
     return 0
 

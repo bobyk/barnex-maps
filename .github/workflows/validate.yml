@@ -9,9 +9,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate every inverter + charger map against the schema and check index hashes
-        # tools/update_index.py --check covers BOTH index.json (inverter
-        # maps) and chargers/index.json (charger maps) in one pass.
+        # tools/update_index.py --check covers index.json (inverter maps),
+        # chargers/index.json (charger maps) and tuya/index.json (Tuya
+        # device profiles) in one pass.
         run: python3 tools/update_index.py --check
+      - name: Tuya profile validator tests
+        run: python3 -m unittest discover -s tools/tests -v
       - name: Vendored Monocypher signing helper still builds
         # tools/sign_map.py (charger maps only — inverter maps stay
         # unsigned) shells out to this; a

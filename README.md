@@ -18,11 +18,13 @@ with commands, its signature) and applies it.
 |---|---|
 | [`index.json`](index.json), [`maps/`](maps) | inverter register maps (Modbus TCP/RTU, read-only) |
 | [`chargers/index.json`](chargers/index.json), [`chargers/maps/`](chargers/maps) | EV charger protocol maps (HTTP+JSON) |
+| [`tuya/index.json`](tuya/index.json), [`tuya/profiles/`](tuya/profiles) | Tuya device profiles (data point maps for chargers and relays) |
 | [`docs/inverter-maps.md`](docs/inverter-maps.md) | inverter map format, index fields, SunSpec notes |
 | [`docs/charger-maps.md`](docs/charger-maps.md) | charger map format, safety rules, signing |
+| [`docs/tuya-profiles.md`](docs/tuya-profiles.md) | Tuya profile format, limits, signing rule |
 | [`tools/`](tools) | validator, checksum and signing helpers |
 
-Inverter and charger maps are independent: a PR should touch one of them,
+Inverter maps, charger maps and Tuya profiles are independent: a PR should touch one of them,
 not both, unless it changes shared tooling.
 
 ## Inverters
@@ -58,6 +60,15 @@ them on a real inverter.
 | Eveus Pro, firmware R3.01.8 to R3.05.x (reports `verFWWifi`) | `eveus_current.json` | read + set current / pause, **signed**, verified |
 | Eveus / EnergyStar, old firmware EnergyStar V5.x | `eveus_legacy.json` | read-only (this firmware has no stop command) |
 | Ladergy / Svartex / Reve (local GraphQL API, web app V0.3.x) | `ladergy_graphql.json` | read-only, **unverified** (schema 2; written from the public web app, not yet tested on a real charger) |
+
+## Tuya device profiles
+
+Tuya devices report numbered data points; a profile says what each number
+means. Format and limits: [`docs/tuya-profiles.md`](docs/tuya-profiles.md).
+
+| Device | Profile | Control |
+|---|---|---|
+| Feyree EV charger (Tuya product ids `hytatexziwaifxj1`, `emvuyyax4lekiooj`) | `feyree_evse.json` | read-only, **unverified** |
 
 ## Contributing
 
