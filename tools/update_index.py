@@ -601,9 +601,24 @@ def _tuya_dp_spec(spec, where: str, errors: list[str], *, allow_scale: bool,
         errors.append(f"{where}.scale: must be a finite number")
 
 
+def _tuya_word_ok(v) -> bool:
+    """Enum map keys and cmd on/off words: printable ASCII (0x20..0x7E), 1..23 bytes."""
+    return (isinstance(v, str) and 1 <= len(v) <= 23
+            and all(0x20 <= ord(c) <= 0x7E for c in v))
+
+
 def _tuya_enum_word(v, where: str, errors: list[str]) -> None:
-    if not isinstance(v, str) or not 1 <= len(v) <= 23:
-        errors.append(f"{where}: must be a string of 1..23 chars")
+    if not _tuya_word_ok(v):
+        errors.append(f"{where}: must be 1..23 printable ASCII chars (0x20..0x7E)")
+
+
+def _same_type_exact(a, b) -> bool:
+    """Equality that does not let True == 1 == 1.0 through."""
+    if type(a) is not type(b):
+        return False
+    if isinstance(a, list):
+        return len(a) == len(b) and all(_same_type_exact(x, y) for x, y in zip(a, b))
+    return a == b
 
 
 def validate_tuya_profile(doc, raw_len: int) -> list[str]:
@@ -630,8 +645,9 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
     if "verified" in doc and not isinstance(doc["verified"], bool):
         errors.append("verified must be a boolean")
     label = doc.get("label")
-    if not isinstance(label, str) or not 1 <= len(label) <= 64:
-        errors.append("label must be a string of 1..64 chars")
+    if (not isinstance(label, str) or not 1 <= len(label.encode("utf-8", "surrogatepass")) <= 64
+            or any(ord(c) < 0x20 or ord(c) == 0x7F for c in label)):
+        errors.append("label must be 1..64 bytes of UTF-8 with no control characters")
 
     match = doc.get("match")
     if not isinstance(match, dict) or set(match) != {"product_ids"}:
@@ -679,8 +695,8 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
                     errors.append(f"{where}.map: must be an object with 1..12 entries")
                 else:
                     for k, v in m.items():
-                        if not 1 <= len(k) <= 23:
-                            errors.append(f"{where}.map: key {k!r} must be 1..23 chars")
+                        if not _tuya_word_ok(k):
+                            errors.append(f"{where}.map: key {k!r} must be 1..23 printable ASCII chars")
                         if v not in TUYA_STATE_VALUES:
                             errors.append(f"{where}.map[{k!r}]: must be one of {list(TUYA_STATE_VALUES)}")
         if kind == "charger" and "state" not in read:
@@ -767,7 +783,7 @@ def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
         for key, file_val in (("id", doc["id"]), ("rev", doc["rev"]), ("kind", doc["kind"]),
                               ("schema", doc["schema"]),
                               ("product_ids", doc["match"]["product_ids"])):
-            if entry.get(key) != file_val:
+            if not _same_type_exact(entry.get(key), file_val):
                 problems.append(f"{rel_path}: index {key!r} {entry.get(key)!r} differs from "
                                 f"the profile's {file_val!r}")
 

@@ -42,7 +42,7 @@ class ValidatorTests(unittest.TestCase):
                 self.assertEqual(ui.validate_tuya_profile(doc, n), [])
 
     def test_every_bad_fixture_is_rejected(self):
-        self.assertGreaterEqual(len(BAD), 19)
+        self.assertGreaterEqual(len(BAD), 24)
         for name in BAD:
             with self.subTest(name):
                 doc, err, n = load(name)
@@ -90,6 +90,30 @@ class ValidatorTests(unittest.TestCase):
         doc, _, n = load("ok_readonly.json")
         doc["label"] = "x" * 65
         self.assertTrue(ui.validate_tuya_profile(doc, n))
+
+    def test_label_is_counted_in_utf8_bytes(self):
+        doc, _, n = load("ok_readonly.json")
+        doc["label"] = "\u00e9" * 32  # 32 code points, exactly 64 bytes
+        self.assertEqual(len(doc["label"].encode("utf-8")), 64)
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+        doc["label"] = "\u00e9" * 32 + "a"  # 65 bytes
+        self.assertTrue(ui.validate_tuya_profile(doc, n))
+        doc["label"] = "a\x7fb"
+        self.assertTrue(ui.validate_tuya_profile(doc, n))
+
+    def test_enum_words_are_printable_ascii(self):
+        doc, _, n = load("ok_cmd.json")
+        doc["read"]["state"]["map"] = {"a b~": "A", "x" * 23: "B"}
+        doc["cmd"]["enable"].update(on="x" * 23, off="~ ")
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+        for bad in ("\x7f", "\x1f", "\u00e9", ""):
+            with self.subTest(repr(bad)):
+                d2 = json.loads(json.dumps(doc))
+                d2["cmd"]["enable"]["off"] = "a" + bad
+                self.assertTrue(ui.validate_tuya_profile(d2, n) or bad == "")
+        d3 = json.loads(json.dumps(doc))
+        d3["cmd"]["enable"]["off"] = ""
+        self.assertTrue(ui.validate_tuya_profile(d3, n))
 
     def test_bool_is_not_an_int(self):
         doc, _, n = load("ok_readonly.json")
@@ -160,6 +184,12 @@ class IndexTests(unittest.TestCase):
         for key, val in [("id", "other-1"), ("rev", 2), ("kind", "relay"), ("schema", 2),
                          ("product_ids", ["zzz"])]:
             with self.subTest(key):
+                self.write_index([self.add("ok_readonly.json", "a.json", **{key: val})])
+                self.assertTrue(self.run_index(True)[2])
+
+    def test_index_comparison_is_type_exact(self):
+        for key, val in [("rev", True), ("rev", 1.0), ("schema", True), ("schema", 1.0)]:
+            with self.subTest(f"{key}={val!r}"):
                 self.write_index([self.add("ok_readonly.json", "a.json", **{key: val})])
                 self.assertTrue(self.run_index(True)[2])
 

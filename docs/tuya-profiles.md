@@ -39,7 +39,7 @@ See [`feyree_evse.json`](../tuya/profiles/feyree_evse.json) for a complete one.
 | `rev` | integer 1 to 65535; raise it on every change |
 | `kind` | `charger` or `relay` |
 | `verified` | optional boolean, default `false` |
-| `label` | string, 1 to 64 chars |
+| `label` | 1 to 64 **bytes** of UTF-8 (not characters), no control characters (below 0x20 or 0x7F) |
 | `match.product_ids` | 1 to 8 items, each `[0-9A-Za-z]`, 1 to 16 chars |
 | `limits.min_a` | integer 6 to 32 |
 | `limits.max_a` | integer `min_a` to 80 |
@@ -47,7 +47,7 @@ See [`feyree_evse.json`](../tuya/profiles/feyree_evse.json) for a complete one.
 | data point `dp` | integer 1 to 255 |
 | data point `type` | `bool`, `int`, `enum` or `str` |
 | data point `scale` | finite number, default `1`; the raw value is multiplied by it |
-| `state.map` | 1 to 12 entries, keys 1 to 23 chars |
+| `state.map` | 1 to 12 entries; keys are ASCII only, every byte 0x20 to 0x7E, 1 to 23 bytes |
 
 `limits` is required for `charger` and optional for `relay` (if present it is
 checked the same way). Unknown top-level keys, unknown roles and unknown keys
@@ -72,7 +72,7 @@ All optional, except `state` for `kind: charger`.
 Commands make a profile able to change the device, so they are limited to two:
 
 - `set_a`: `{"dp": N, "type": "int"}`
-- `enable`: `{"dp": N, "type": "bool"}` or `{"dp": N, "type": "enum", "on": "<str>", "off": "<str>"}` (`on`/`off` 1 to 23 chars)
+- `enable`: `{"dp": N, "type": "bool"}` or `{"dp": N, "type": "enum", "on": "<str>", "off": "<str>"}` (`on`/`off`: ASCII only, every byte 0x20 to 0x7E, 1 to 23 bytes)
 
 ### `quirks` (optional)
 
@@ -96,7 +96,7 @@ limit) and prints the `sha256` and `sig` to put in the index entry.
  "verified": false, "product_ids": ["hytatexziwaifxj1"], "label": "..."}
 ```
 
-`id`, `rev`, `kind`, `schema` and `product_ids` must equal the file's. Two
+`id`, `rev`, `kind`, `schema` and `product_ids` must equal the file's, with the same JSON type (`true` or `1.0` do not equal `1`). Two
 entries may not claim the same product id with the same `rev`.
 
 ## Adding a profile
