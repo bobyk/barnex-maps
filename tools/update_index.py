@@ -621,6 +621,19 @@ def _same_type_exact(a, b) -> bool:
     return a == b
 
 
+def _has_surrogate(v) -> bool:
+    """True if any string value or object key holds a code point in U+D800..U+DFFF
+    (a lone UTF-16 surrogate after JSON decoding; a valid pair decodes to one
+    non-surrogate code point and is fine)."""
+    if isinstance(v, str):
+        return any(0xD800 <= ord(c) <= 0xDFFF for c in v)
+    if isinstance(v, dict):
+        return any(_has_surrogate(k) or _has_surrogate(x) for k, x in v.items())
+    if isinstance(v, list):
+        return any(_has_surrogate(x) for x in v)
+    return False
+
+
 def validate_tuya_profile(doc, raw_len: int) -> list[str]:
     """Returns a list of errors (empty = valid). `raw_len` is the file size in bytes."""
     errors: list[str] = []
@@ -628,6 +641,8 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
         errors.append(f"file is {raw_len} bytes, limit is {TUYA_MAX_BYTES}")
     if not isinstance(doc, dict):
         return errors + ["top level must be an object"]
+    if _has_surrogate(doc):
+        errors.append("lone UTF-16 surrogate (U+D800..U+DFFF) in a string or key")
     for k in doc:
         if k not in TUYA_TOP_KEYS:
             errors.append(f"unknown top-level key {k!r}")
@@ -645,7 +660,7 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
     if "verified" in doc and not isinstance(doc["verified"], bool):
         errors.append("verified must be a boolean")
     label = doc.get("label")
-    if (not isinstance(label, str) or not 1 <= len(label.encode("utf-8", "surrogatepass")) <= 64
+    if (not isinstance(label, str) or not 1 <= len(label.encode("utf-8", "replace")) <= 64
             or any(ord(c) < 0x20 or ord(c) == 0x7F for c in label)):
         errors.append("label must be 1..64 bytes of UTF-8 with no control characters")
 

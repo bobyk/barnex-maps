@@ -52,7 +52,9 @@ See [`feyree_evse.json`](../tuya/profiles/feyree_evse.json) for a complete one.
 `limits` is required for `charger` and optional for `relay` (if present it is
 checked the same way). Unknown top-level keys, unknown roles and unknown keys
 inside a role are rejected. Duplicate JSON keys and `NaN`/`Infinity` are
-rejected too, so every reader sees the same file.
+rejected too, so every reader sees the same file. So is a lone UTF-16
+surrogate (`\ud800` to `\udfff` not part of a valid pair) in any string or
+key; a valid pair such as an emoji in `label` is fine (it counts as 4 bytes).
 
 ### `read` roles
 

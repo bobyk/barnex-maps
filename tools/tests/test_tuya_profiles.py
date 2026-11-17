@@ -42,7 +42,7 @@ class ValidatorTests(unittest.TestCase):
                 self.assertEqual(ui.validate_tuya_profile(doc, n), [])
 
     def test_every_bad_fixture_is_rejected(self):
-        self.assertGreaterEqual(len(BAD), 24)
+        self.assertGreaterEqual(len(BAD), 26)
         for name in BAD:
             with self.subTest(name):
                 doc, err, n = load(name)
@@ -100,6 +100,22 @@ class ValidatorTests(unittest.TestCase):
         self.assertTrue(ui.validate_tuya_profile(doc, n))
         doc["label"] = "a\x7fb"
         self.assertTrue(ui.validate_tuya_profile(doc, n))
+
+    def test_surrogates(self):
+        doc, err = ui.parse_tuya_profile(b'{"label": "ok \\ud83d\\ude00"}')
+        self.assertIsNone(err)
+        self.assertEqual(doc["label"], "ok \U0001F600")
+        good, _, n = load("ok_readonly.json")
+        good["label"] = "ok \U0001F600"  # paired surrogates decode to one code point
+        self.assertEqual(ui.validate_tuya_profile(good, n), [])
+        for lone in ("\ud800", "\udfff"):
+            with self.subTest(lone):
+                d1 = json.loads(json.dumps(good))
+                d1["label"] = "a" + lone
+                self.assertTrue(any("surrogate" in e for e in ui.validate_tuya_profile(d1, n)))
+                d2 = json.loads(json.dumps(good))
+                d2["limits"] = {"min_a": 6, "max_a": 32, "phases": 1, "x" + lone: 1}
+                self.assertTrue(any("surrogate" in e for e in ui.validate_tuya_profile(d2, n)))
 
     def test_enum_words_are_printable_ascii(self):
         doc, _, n = load("ok_cmd.json")
