@@ -5,8 +5,8 @@ Files here are **drafts**: proposed profiles that are
 - **unverified**: nobody has confirmed the values on a real device,
 - **unsigned**: no signature exists for them,
 - **not listed** in [`tuya/index.json`](../index.json), and
-- **not used by any device**: a Barnex coordinator only ever fetches what the
-  index lists, so nothing in this folder can reach a device.
+- **not published**: nothing in this folder is published, only files listed
+  in `tuya/index.json` are.
 
 CI validates every file here with the draft rules
 (`python3 tools/update_index.py --check`) and fails if the index ever points

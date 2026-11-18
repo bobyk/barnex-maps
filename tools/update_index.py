@@ -21,6 +21,7 @@ import argparse
 import hashlib
 import json
 import math
+import posixpath
 import re
 import sys
 from datetime import datetime, timezone
@@ -773,6 +774,11 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
                                       types=("bool", "enum"))
                 else:
                     errors.append(f"{where}: unknown command")
+            if kind == "charger":
+                for need in ("set_a", "enable"):
+                    if need not in cmd:
+                        errors.append(f"cmd.{need} is required: a charger with commands needs "
+                                      f"both cmd.set_a and cmd.enable")
 
     _tuya_cmd_vs_read(doc.get("cmd"), doc.get("read"), errors)
 
@@ -821,7 +827,7 @@ def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
         if not rel_path:
             problems.append(f"tuya/index.json entry missing 'file': {entry}")
             continue
-        if rel_path.replace("\\", "/").startswith(TUYA_DRAFTS_REL + "/"):
+        if posixpath.normpath(rel_path.replace("\\", "/")).startswith(TUYA_DRAFTS_REL + "/"):
             problems.append(f"{rel_path}: a draft must not be listed in tuya/index.json — "
                             f"drafts are unsigned and unpublished; move the file to tuya/profiles/ first")
             continue
@@ -896,6 +902,9 @@ def check_tuya_draft(path: Path) -> tuple[list[str], dict | None]:
         return [f"cannot read file: {e}"], None
     doc, err = parse_tuya_profile(raw)
     errors = [err] if err else validate_tuya_profile(doc, len(raw))
+    if not err and doc.get("verified") is True:
+        errors.append("a draft is never verified: set \"verified\" to false "
+                      "(verification is recorded only after a bench test of the published profile)")
     if errors:
         return errors, None
     entry = {

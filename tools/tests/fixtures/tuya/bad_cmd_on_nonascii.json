@@ -64,10 +64,14 @@
     }
   },
   "cmd": {
+    "set_a": {
+      "dp": 102,
+      "type": "int"
+    },
     "enable": {
       "dp": 120,
       "type": "enum",
-      "on": "\u00e9",
+      "on": "é",
       "off": "stop"
     }
   }

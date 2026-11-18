@@ -81,6 +81,11 @@ A `cmd` data point that `read` also declares must have a compatible type:
 `enum` needs an enum or str. A mismatch (for example a start/stop enum on a DP
 that `read` calls a bool) is an error: the same DP cannot carry two types.
 
+A `kind: "charger"` profile that has `cmd` must declare both `set_a` and
+`enable`. A charger that can be set but never started or stopped, or the
+reverse, is not a usable command profile, so either one alone is an error
+(a `relay` profile needs only `enable`).
+
 ### `quirks` (optional)
 
 `reassert_set_a_on_plug` (boolean): the device forgets its current limit when
@@ -136,7 +141,8 @@ in the index and not used by any device. CI validates every file there and
 fails if the index points into that folder.
 
 1. Take a DP dump from the device (or its Tuya product schema) and write or
-   edit the draft. Keep `"verified": false` and use a `rev` higher than the
+   edit the draft. Keep `"verified": false` (a draft marked verified fails
+   validation: a draft is never verified) and use a `rev` higher than the
    published one.
 2. Validate it without touching the index:
 
@@ -147,15 +153,27 @@ fails if the index points into that folder.
    This applies the same rules and messages as the index check, except that a
    `cmd` profile needs no signature yet. It prints the index entry the file
    will need.
-3. The maintainer signs the file with the project's signing key
-   (`tools/sign_map.py`, see [Signing](#signing)). Contributors cannot do this
-   step.
+3. The maintainer signs the file with `tools/sign_map.py` (see
+   [Signing](#signing)). Contributors cannot do this step.
 4. Move the file to `tuya/profiles/`, add the index entry with its `sha256`
    and `sig` (`python3 tools/update_index.py` fills `sha256`), and set `rev`
    above every published revision of that `id`. Any edit after signing needs a
    new signature, because the signature covers the exact bytes.
 5. Run `python3 tools/update_index.py --check` and the unit tests, then open
    the PR.
+
+Rules for the maintainer:
+
+- **Never change the `id` of a published profile for a product.** Revisions of
+  a signed profile are tracked per `id` and never go down, so a new `id` would
+  be treated as a different profile and the old signed one would keep being
+  accepted. Publish the change as a higher `rev` under the same `id`.
+- **Never raise `limits.min_a` (or lower `limits.max_a`) in a new revision
+  without telling owners to re-save the charger on their device.** A device
+  keeps the limits it had when the charger was added, and a requested current
+  outside the new profile's range is refused, not clamped.
+- Withdrawing commands for a product is done by publishing a higher signed
+  revision without `cmd`, not by removing the profile from the index.
 
 ## Verification status
 

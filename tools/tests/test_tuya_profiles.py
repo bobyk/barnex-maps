@@ -182,6 +182,21 @@ class ValidatorTests(unittest.TestCase):
         d["cmd"]["set_a"]["dp"] = 130
         self.assertEqual(ui.validate_tuya_profile(d, n), [])
 
+    def test_charger_cmd_needs_both_commands(self):
+        for name, missing in (("bad_cmd_only_set_a.json", "cmd.enable"),
+                              ("bad_cmd_only_enable.json", "cmd.set_a")):
+            with self.subTest(name):
+                doc, err, n = load(name)
+                self.assertIsNone(err)
+                errors = ui.validate_tuya_profile(doc, n)
+                self.assertEqual(len(errors), 1, errors)
+                self.assertIn(missing, errors[0])
+
+    def test_relay_cmd_may_have_enable_only(self):
+        doc, _, n = load("ok_relay.json")
+        self.assertEqual(list(doc["cmd"]), ["enable"])
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+
     def test_bool_is_not_an_int(self):
         doc, _, n = load("ok_readonly.json")
         doc["rev"] = True
@@ -223,6 +238,20 @@ class DraftTests(unittest.TestCase):
                 errors, entry = self.draft(FIX / name)
                 self.assertEqual(errors, expected)
                 self.assertIsNone(entry)
+
+    def test_draft_marked_verified_is_rejected(self):
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        doc = json.loads((FIX / "ok_cmd.json").read_text(encoding="utf-8"))
+        doc["verified"] = True
+        path = tmp / "v.json"
+        path.write_text(json.dumps(doc), encoding="utf-8")
+        errors, entry = self.draft(path)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("never verified", errors[0])
+        self.assertIsNone(entry)
+        # the published-profile rules still accept verified: true
+        self.assertEqual(ui.validate_tuya_profile(doc, path.stat().st_size), [])
 
     def test_draft_missing_file_is_an_error(self):
         errors, entry = self.draft(FIX / "nope.json")
@@ -414,6 +443,16 @@ class IndexTests(unittest.TestCase):
         problems = self.run_index(True)[2]
         self.assertTrue(any("draft" in p for p in problems), problems)
         self.assertTrue(any("draft" in p for p in self.run_index(False)[2]))
+
+    def test_draft_path_is_normalised_before_the_guard(self):
+        (self.tmp / "tuya" / "drafts").mkdir()
+        (self.tmp / "tuya" / "drafts" / "d.json").write_bytes((FIX / "ok_readonly.json").read_bytes())
+        for rel in ("tuya/profiles/../drafts/d.json", "tuya/./drafts/d.json",
+                    "tuya\\drafts\\d.json", "tuya/profiles/../drafts/../drafts/d.json"):
+            with self.subTest(rel):
+                self.write_index([self.add("ok_readonly.json", "a.json", file=rel)])
+                problems = self.run_index(True)[2]
+                self.assertTrue(any("draft" in p for p in problems), problems)
 
     def test_check_validates_drafts_with_the_draft_rules(self):
         self.write_index([])

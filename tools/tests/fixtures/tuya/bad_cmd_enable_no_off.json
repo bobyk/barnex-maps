@@ -64,6 +64,10 @@
     }
   },
   "cmd": {
+    "set_a": {
+      "dp": 102,
+      "type": "int"
+    },
     "enable": {
       "dp": 120,
       "type": "enum",
