@@ -902,7 +902,7 @@ def check_tuya_draft(path: Path) -> tuple[list[str], dict | None]:
         return [f"cannot read file: {e}"], None
     doc, err = parse_tuya_profile(raw)
     errors = [err] if err else validate_tuya_profile(doc, len(raw))
-    if not err and doc.get("verified") is True:
+    if not err and isinstance(doc, dict) and doc.get("verified") is True:
         errors.append("a draft is never verified: set \"verified\" to false "
                       "(verification is recorded only after a bench test of the published profile)")
     if errors:

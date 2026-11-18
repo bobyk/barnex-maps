@@ -253,6 +253,17 @@ class DraftTests(unittest.TestCase):
         # the published-profile rules still accept verified: true
         self.assertEqual(ui.validate_tuya_profile(doc, path.stat().st_size), [])
 
+    def test_draft_with_non_object_top_level_gives_errors_not_an_exception(self):
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, tmp)
+        for text in ("[]", '"x"', "3"):
+            with self.subTest(text):
+                path = tmp / "n.json"
+                path.write_text(text, encoding="utf-8")
+                errors, entry = self.draft(path)
+                self.assertTrue(errors)
+                self.assertIsNone(entry)
+
     def test_draft_missing_file_is_an_error(self):
         errors, entry = self.draft(FIX / "nope.json")
         self.assertTrue(errors)
