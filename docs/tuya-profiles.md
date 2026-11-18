@@ -76,6 +76,11 @@ Commands make a profile able to change the device, so they are limited to two:
 - `set_a`: `{"dp": N, "type": "int"}`
 - `enable`: `{"dp": N, "type": "bool"}` or `{"dp": N, "type": "enum", "on": "<str>", "off": "<str>"}` (`on`/`off`: ASCII only, every byte 0x20 to 0x7E, 1 to 23 bytes)
 
+A `cmd` data point that `read` also declares must have a compatible type:
+`set_a` (int) needs an int, `enable` as `bool` needs a bool, and `enable` as
+`enum` needs an enum or str. A mismatch (for example a start/stop enum on a DP
+that `read` calls a bool) is an error: the same DP cannot carry two types.
+
 ### `quirks` (optional)
 
 `reassert_set_a_on_plug` (boolean): the device forgets its current limit when
@@ -90,6 +95,10 @@ fails if a `cmd` profile is unsigned, and if a non-empty `sig` is not exactly
 [`tools/sign_map.py`](../tools/sign_map.py), the same tool and key as for
 [charger maps](charger-maps.md#signing); it accepts profile files (4096 byte
 limit) and prints the `sha256` and `sig` to put in the index entry.
+
+A signed profile outranks an unsigned one for the same product, and the
+revisions of a signed profile never go down: a client keeps the highest signed
+`rev` it has seen and ignores any lower one.
 
 ## Index entry
 
@@ -117,12 +126,44 @@ entries may not claim the same product id with the same `rev`.
    ```
 
 4. Open a PR. Adding `cmd` later is a new `rev` and needs a maintainer
-   signature.
+   signature (next section).
+
+## From draft to published
+
+Profiles that can send commands start as **drafts** in
+[`tuya/drafts/`](../tuya/drafts). A draft is unverified, unsigned, not listed
+in the index and not used by any device. CI validates every file there and
+fails if the index points into that folder.
+
+1. Take a DP dump from the device (or its Tuya product schema) and write or
+   edit the draft. Keep `"verified": false` and use a `rev` higher than the
+   published one.
+2. Validate it without touching the index:
+
+   ```bash
+   python3 tools/update_index.py --draft tuya/drafts/your_profile.json
+   ```
+
+   This applies the same rules and messages as the index check, except that a
+   `cmd` profile needs no signature yet. It prints the index entry the file
+   will need.
+3. The maintainer signs the file with the project's signing key
+   (`tools/sign_map.py`, see [Signing](#signing)). Contributors cannot do this
+   step.
+4. Move the file to `tuya/profiles/`, add the index entry with its `sha256`
+   and `sig` (`python3 tools/update_index.py` fills `sha256`), and set `rev`
+   above every published revision of that `id`. Any edit after signing needs a
+   new signature, because the signature covers the exact bytes.
+5. Run `python3 tools/update_index.py --check` and the unit tests, then open
+   the PR.
 
 ## Verification status
 
 `verified: false` means nobody has confirmed the DP numbers on a real device
 of that product. Clients should show such a profile as unverified and keep it
 read-only. A maintainer sets `verified: true` (and raises `rev`) only after
-the readings were checked against the device, and for a `cmd` profile after
-commands were tried on the bench.
+the readings were checked against the device. For a `cmd` profile it also
+means the commands were tried on the bench: setting the current changed what
+the device delivered, and the enable command started and stopped charging. Only
+a maintainer sets it, and only together with the signature; a draft always
+stays `false`.

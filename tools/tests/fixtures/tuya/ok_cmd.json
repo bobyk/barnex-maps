@@ -4,7 +4,7 @@
   "rev": 1,
   "kind": "charger",
   "verified": false,
-  "label": "Feyree EV charger (read-only, unverified)",
+  "label": "Feyree EV charger (commands, unverified)",
   "match": {
     "product_ids": [
       "hytatexziwaifxj1",
@@ -70,9 +70,7 @@
     },
     "enable": {
       "dp": 112,
-      "type": "enum",
-      "on": "start",
-      "off": "stop"
+      "type": "bool"
     }
   },
   "quirks": {

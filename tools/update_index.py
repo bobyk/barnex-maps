@@ -642,6 +642,29 @@ def _has_surrogate(v) -> bool:
     return False
 
 
+# A command's declared type must fit what `read` says about the same data
+# point: int <-> int, bool <-> bool, enum <-> enum or str.
+_TUYA_CMD_READ_TYPES = {"int": ("int",), "bool": ("bool",), "enum": ("enum", "str")}
+
+
+def _tuya_cmd_vs_read(cmd, read, errors: list[str]) -> None:
+    if not isinstance(cmd, dict) or not isinstance(read, dict):
+        return
+    for k, spec in cmd.items():
+        if k not in ("set_a", "enable") or not isinstance(spec, dict):
+            continue
+        dp, ctype = spec.get("dp"), spec.get("type")
+        if not _is_int(dp) or ctype not in _TUYA_CMD_READ_TYPES:
+            continue  # already reported by the per-field checks
+        for role, rspec in read.items():
+            if not isinstance(rspec, dict) or not _is_int(rspec.get("dp")) or rspec["dp"] != dp:
+                continue
+            rtype = rspec.get("type")
+            if rtype in TUYA_TYPES and rtype not in _TUYA_CMD_READ_TYPES[ctype]:
+                errors.append(f"cmd.{k}: dp {dp} has type {ctype!r} but read.{role} "
+                              f"declares the same dp as {rtype!r}")
+
+
 def validate_tuya_profile(doc, raw_len: int) -> list[str]:
     """Returns a list of errors (empty = valid). `raw_len` is the file size in bytes."""
     errors: list[str] = []
@@ -751,6 +774,8 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
                 else:
                     errors.append(f"{where}: unknown command")
 
+    _tuya_cmd_vs_read(doc.get("cmd"), doc.get("read"), errors)
+
     quirks = doc.get("quirks")
     if quirks is not None:
         if not isinstance(quirks, dict):
@@ -795,6 +820,10 @@ def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
             rel_path = None
         if not rel_path:
             problems.append(f"tuya/index.json entry missing 'file': {entry}")
+            continue
+        if rel_path.replace("\\", "/").startswith(TUYA_DRAFTS_REL + "/"):
+            problems.append(f"{rel_path}: a draft must not be listed in tuya/index.json — "
+                            f"drafts are unsigned and unpublished; move the file to tuya/profiles/ first")
             continue
         path = ROOT / rel_path
         if not path.exists():
@@ -853,11 +882,76 @@ def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
     return changed, len(entries)
 
 
+TUYA_DRAFTS_REL = "tuya/drafts"
+
+
+def check_tuya_draft(path: Path) -> tuple[list[str], dict | None]:
+    """Validates one profile file that is not (yet) in the index. Same rules and
+    messages as the index path, except that a `cmd` profile needs no signature.
+    Returns (errors, index_entry); the entry is what tuya/index.json must contain
+    once the file is moved to tuya/profiles/ and signed."""
+    try:
+        raw = path.read_bytes()
+    except OSError as e:
+        return [f"cannot read file: {e}"], None
+    doc, err = parse_tuya_profile(raw)
+    errors = [err] if err else validate_tuya_profile(doc, len(raw))
+    if errors:
+        return errors, None
+    entry = {
+        "id": doc["id"], "rev": doc["rev"], "kind": doc["kind"], "schema": doc["schema"],
+        "file": f"tuya/profiles/{path.name}",
+        "sha256": hashlib.sha256(raw).hexdigest(),
+        "sig": "",
+        "verified": doc.get("verified", False),
+        "product_ids": doc["match"]["product_ids"],
+        "label": doc["label"],
+    }
+    return [], entry
+
+
+def process_tuya_drafts(problems: list[str]) -> int:
+    """Validates every tuya/drafts/*.json with the draft rules. Returns the count."""
+    drafts = sorted((ROOT / "tuya" / "drafts").glob("*.json"))
+    for path in drafts:
+        errors, _ = check_tuya_draft(path)
+        if errors:
+            problems.append(f"{path.relative_to(ROOT).as_posix()}: FAILED Tuya profile validation:")
+            problems.extend(f"    - {e}" for e in errors)
+    return len(drafts)
+
+
+def draft_main(file_arg: str) -> int:
+    path = Path(file_arg)
+    errors, entry = check_tuya_draft(path)
+    if errors:
+        print(f"{file_arg}: FAILED Tuya profile validation:", file=sys.stderr)
+        print("\n".join(f"    - {e}" for e in errors), file=sys.stderr)
+        return 1
+    raw = path.read_bytes()
+    has_cmd = "cmd" in json.loads(raw)
+    print(f"{file_arg}: valid Tuya profile draft (not checked against the index).")
+    print("Once moved to tuya/profiles/, its index entry must contain:")
+    print(json.dumps(entry, indent=2, ensure_ascii=False))
+    if has_cmd:
+        print("\nThis profile has cmd: the maintainer must sign the file (see docs/tuya-profiles.md) "
+              "and put the 128-hex-character signature in \"sig\" before it is listed; "
+              "an unsigned cmd profile fails --check.")
+    else:
+        print("\nNo cmd: \"sig\" stays empty.")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true",
                     help="CI mode: fail on any validation/hash mismatch, write nothing")
+    ap.add_argument("--draft", metavar="FILE",
+                    help="validate one Tuya profile file that is not in the index (a cmd profile "
+                         "needs no signature here), print the index entry it will need, and exit")
     args = ap.parse_args()
+    if args.draft:
+        return draft_main(args.draft)
 
     index = json.loads(INDEX_PATH.read_text())
     problems: list[str] = []
@@ -897,6 +991,7 @@ def main() -> int:
 
     chargers_changed, chargers_count = process_chargers_index(args, problems)
     tuya_changed, tuya_count = process_tuya_index(args, problems)
+    process_tuya_drafts(problems)
 
     if problems:
         print("\n".join(problems), file=sys.stderr)

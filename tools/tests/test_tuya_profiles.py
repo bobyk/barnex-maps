@@ -23,7 +23,7 @@ sys.path.insert(0, str(REPO / "tools"))
 import update_index as ui  # noqa: E402
 
 FIX = HERE / "fixtures" / "tuya"
-GOOD = ["ok_readonly.json", "ok_cmd.json", "ok_relay.json"]
+GOOD = ["ok_readonly.json", "ok_cmd.json", "ok_cmd_enum.json", "ok_relay.json"]
 BAD = sorted(p.name for p in FIX.glob("bad_*.json"))
 
 
@@ -136,7 +136,7 @@ class ValidatorTests(unittest.TestCase):
                 self.assertTrue(any("surrogate" in e for e in ui.validate_tuya_profile(d2, n)))
 
     def test_enum_words_are_printable_ascii(self):
-        doc, _, n = load("ok_cmd.json")
+        doc, _, n = load("ok_cmd_enum.json")
         doc["read"]["state"]["map"] = {"a b~": "A", "x" * 23: "B"}
         doc["cmd"]["enable"].update(on="x" * 23, off="~ ")
         self.assertEqual(ui.validate_tuya_profile(doc, n), [])
@@ -149,6 +149,39 @@ class ValidatorTests(unittest.TestCase):
         d3["cmd"]["enable"]["off"] = ""
         self.assertTrue(ui.validate_tuya_profile(d3, n))
 
+    def test_cmd_type_mismatch_fixture_has_one_clear_error(self):
+        doc, err, n = load("bad_cmd_type_mismatch.json")
+        self.assertIsNone(err)
+        errors = ui.validate_tuya_profile(doc, n)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("cmd.enable", errors[0])
+        self.assertIn("read.enabled", errors[0])
+
+    def test_cmd_type_compatibility_rule(self):
+        doc, _, n = load("ok_cmd.json")
+        # enum enable against a read DP declared as str is compatible
+        d = json.loads(json.dumps(doc))
+        d["read"]["enabled"]["type"] = "str"
+        d["cmd"]["enable"] = {"dp": 112, "type": "enum", "on": "start", "off": "stop"}
+        self.assertEqual(ui.validate_tuya_profile(d, n), [])
+        # ... against enum too
+        d["read"]["enabled"]["type"] = "enum"
+        self.assertEqual(ui.validate_tuya_profile(d, n), [])
+        # bool enable against a read DP declared int is a mismatch
+        d = json.loads(json.dumps(doc))
+        d["read"]["enabled"]["type"] = "int"
+        self.assertTrue(any("cmd.enable" in e for e in ui.validate_tuya_profile(d, n)))
+        # set_a int against a read DP declared bool / enum / str is a mismatch
+        for other in ("bool", "enum", "str"):
+            d = json.loads(json.dumps(doc))
+            d["read"]["set_a"]["type"] = other
+            errors = ui.validate_tuya_profile(d, n)
+            self.assertTrue(any("cmd.set_a" in e for e in errors), (other, errors))
+        # a cmd DP that read does not declare is not compared
+        d = json.loads(json.dumps(doc))
+        d["cmd"]["set_a"]["dp"] = 130
+        self.assertEqual(ui.validate_tuya_profile(d, n), [])
+
     def test_bool_is_not_an_int(self):
         doc, _, n = load("ok_readonly.json")
         doc["rev"] = True
@@ -159,6 +192,88 @@ class ValidatorTests(unittest.TestCase):
         self.assertTrue(err)
         _, err = ui.parse_tuya_profile(b'{"schema": 1, "schema": 1}')
         self.assertTrue(err)
+
+
+class DraftTests(unittest.TestCase):
+    """`--draft FILE` and the tuya/drafts/ directory."""
+
+    def draft(self, path):
+        return ui.check_tuya_draft(Path(path))
+
+    def test_good_fixtures_pass_as_drafts(self):
+        for name in GOOD:
+            with self.subTest(name):
+                errors, entry = self.draft(FIX / name)
+                self.assertEqual(errors, [])
+                self.assertEqual(entry["sig"], "")
+                self.assertEqual(entry["sha256"], hashlib.sha256((FIX / name).read_bytes()).hexdigest())
+
+    def test_draft_allows_cmd_without_signature(self):
+        errors, entry = self.draft(FIX / "ok_cmd.json")
+        self.assertEqual(errors, [])
+        self.assertEqual(entry["file"], "tuya/profiles/ok_cmd.json")
+        self.assertEqual(entry["id"], "feyree-evse-cmd-1")
+        self.assertEqual(entry["product_ids"], ["hytatexziwaifxj1", "emvuyyax4lekiooj"])
+
+    def test_draft_rejects_every_bad_fixture_with_the_index_messages(self):
+        for name in BAD:
+            with self.subTest(name):
+                doc, err, n = load(name)
+                expected = [err] if err else ui.validate_tuya_profile(doc, n)
+                errors, entry = self.draft(FIX / name)
+                self.assertEqual(errors, expected)
+                self.assertIsNone(entry)
+
+    def test_draft_missing_file_is_an_error(self):
+        errors, entry = self.draft(FIX / "nope.json")
+        self.assertTrue(errors)
+        self.assertIsNone(entry)
+
+    def run_cli(self, *argv):
+        out, err = io.StringIO(), io.StringIO()
+        old = sys.argv
+        sys.argv = ["update_index.py", *argv]
+        try:
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = ui.main()
+        finally:
+            sys.argv = old
+        return code, out.getvalue(), err.getvalue()
+
+    def test_cli_draft_accepts_and_prints_the_index_entry(self):
+        code, out, _ = self.run_cli("--draft", str(FIX / "ok_cmd.json"))
+        self.assertEqual(code, 0)
+        self.assertIn('"sha256"', out)
+        self.assertIn("tuya/profiles/ok_cmd.json", out)
+        self.assertIn("signature", out.lower())
+
+    def test_cli_draft_rejects_with_the_same_message_as_the_index_path(self):
+        code, _, err = self.run_cli("--draft", str(FIX / "bad_cmd_type_mismatch.json"))
+        self.assertEqual(code, 1)
+        self.assertIn("FAILED Tuya profile validation", err)
+        self.assertIn("cmd.enable", err)
+
+    def test_cli_draft_does_not_touch_the_index(self):
+        before = ui.TUYA_INDEX_PATH.read_bytes()
+        self.run_cli("--draft", str(FIX / "ok_cmd.json"))
+        self.assertEqual(ui.TUYA_INDEX_PATH.read_bytes(), before)
+
+    def test_published_draft_file_is_valid_and_unlisted(self):
+        path = REPO / "tuya" / "drafts" / "feyree_evse_cmd.json"
+        errors, _ = self.draft(path)
+        self.assertEqual(errors, [])
+        doc = json.loads(path.read_text())
+        self.assertEqual(doc["id"], "feyree-evse-1")
+        self.assertEqual(doc["rev"], 2)
+        self.assertIs(doc["verified"], False)
+        self.assertEqual(doc["cmd"], {"set_a": {"dp": 102, "type": "int"},
+                                      "enable": {"dp": 112, "type": "bool"}})
+        self.assertEqual(doc["quirks"], {"reassert_set_a_on_plug": True})
+        published = json.loads((REPO / "tuya" / "profiles" / "feyree_evse.json").read_text())
+        for key in ("read", "match", "limits", "kind", "schema"):
+            self.assertEqual(doc[key], published[key], key)
+        index = json.loads((REPO / "tuya" / "index.json").read_text())
+        self.assertFalse(any("drafts" in e["file"] for e in index["profiles"]))
 
 
 class IndexTests(unittest.TestCase):
@@ -289,6 +404,31 @@ class IndexTests(unittest.TestCase):
         self.assertTrue(self.run_index(True)[2])
         self.write_index([self.add("bad_schema2.json", "b.json")])
         self.assertTrue(self.run_index(True)[2])
+
+    def test_check_fails_if_index_references_a_draft(self):
+        (self.tmp / "tuya" / "drafts").mkdir()
+        raw = (FIX / "ok_readonly.json").read_bytes()
+        (self.tmp / "tuya" / "drafts" / "d.json").write_bytes(raw)
+        entry = self.add("ok_readonly.json", "a.json", file="tuya/drafts/d.json")
+        self.write_index([entry])
+        problems = self.run_index(True)[2]
+        self.assertTrue(any("draft" in p for p in problems), problems)
+        self.assertTrue(any("draft" in p for p in self.run_index(False)[2]))
+
+    def test_check_validates_drafts_with_the_draft_rules(self):
+        self.write_index([])
+        (self.tmp / "tuya" / "drafts").mkdir()
+        (self.tmp / "tuya" / "drafts" / "ok.json").write_bytes((FIX / "ok_cmd.json").read_bytes())
+        problems: list[str] = []
+        self.assertEqual(ui.process_tuya_drafts(problems), 1)
+        self.assertEqual(problems, [])  # cmd without a signature is fine in a draft
+        (self.tmp / "tuya" / "drafts" / "bad.json").write_bytes(
+            (FIX / "bad_cmd_type_mismatch.json").read_bytes())
+        problems = []
+        self.assertEqual(ui.process_tuya_drafts(problems), 2)
+        self.assertTrue(any("bad.json" in p for p in problems), problems)
+        self.assertTrue(any("cmd.enable" in p for p in problems), problems)
+        self.assertFalse(any("ok.json" in p for p in problems), problems)
 
     def test_real_index_is_current(self):
         ui.ROOT, ui.TUYA_INDEX_PATH = self._root, self._idx

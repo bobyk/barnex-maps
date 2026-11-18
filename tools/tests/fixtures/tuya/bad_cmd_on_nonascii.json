@@ -65,7 +65,7 @@
   },
   "cmd": {
     "enable": {
-      "dp": 112,
+      "dp": 120,
       "type": "enum",
       "on": "\u00e9",
       "off": "stop"

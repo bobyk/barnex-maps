@@ -19,9 +19,10 @@ with commands, its signature) and applies it.
 | [`index.json`](index.json), [`maps/`](maps) | inverter register maps (Modbus TCP/RTU, read-only) |
 | [`chargers/index.json`](chargers/index.json), [`chargers/maps/`](chargers/maps) | EV charger protocol maps (HTTP+JSON) |
 | [`tuya/index.json`](tuya/index.json), [`tuya/profiles/`](tuya/profiles) | Tuya device profiles (data point maps for chargers and relays) |
+| [`tuya/drafts/`](tuya/drafts) | proposed Tuya profiles: unverified, unsigned, not in the index, used by no device |
 | [`docs/inverter-maps.md`](docs/inverter-maps.md) | inverter map format, index fields, SunSpec notes |
 | [`docs/charger-maps.md`](docs/charger-maps.md) | charger map format, safety rules, signing |
-| [`docs/tuya-profiles.md`](docs/tuya-profiles.md) | Tuya profile format, limits, signing rule |
+| [`docs/tuya-profiles.md`](docs/tuya-profiles.md) | Tuya profile format, limits, signing rule, draft-to-published path |
 | [`tools/`](tools) | validator, checksum and signing helpers |
 
 Inverter maps, charger maps and Tuya profiles are independent: a PR should touch one of them,
@@ -69,6 +70,9 @@ means. Format and limits: [`docs/tuya-profiles.md`](docs/tuya-profiles.md).
 | Device | Profile | Control |
 |---|---|---|
 | Feyree EV charger (Tuya product ids `hytatexziwaifxj1`, `emvuyyax4lekiooj`) | `feyree_evse.json` | read-only, **unverified** |
+
+A command profile for the Feyree charger exists only as a
+[draft](tuya/drafts/README.md): unverified, unsigned, not in the index, used by no device.
 
 ## Contributing
 
