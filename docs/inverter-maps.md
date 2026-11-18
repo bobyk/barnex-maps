@@ -270,6 +270,25 @@ update.
 - Fall back to SunSpec int+SF (unit id 126) only when the native profile is
   not documented for that model.
 
+### FoxESS
+
+- Modbus TCP on **port 502, unit id 247**, holding registers (function
+  code 3). The H3-Pro and H3-Smart share one register layout (39xxx/38xxx);
+  the older H3-x.x-E (31xxx) is a different layout and has no map here.
+- Port 502 on the inverter's own network connection is open only when its
+  communication module runs a Modbus TCP server (WL-H3-G2 / Smart logger).
+  Older H3-Pro units answer only on RS485. Probe first:
+  `nc -zv <inverter-ip> 502`. If it is closed, put an RS485-to-Ethernet
+  gateway in Modbus TCP mode on the EMS RS485 pins (17 = A, 18 = B of the
+  20-pin COM connector); the same map then works through the gateway's IP.
+- 32-bit values are high word first (`big_endian`). Some community sources
+  list the two addresses low word first; the map uses the lower address.
+- H3-Pro energy counters changed scale at Manager firmware 1.22 (0.1 → 0.01
+  kWh). The map targets 1.22 and newer.
+- The off-grid flag is bit 0 of 39065 on the H3-Pro and of 39066 on the
+  H3-Smart; that is the only difference between the two maps apart from the
+  number of PV strings.
+
 ## Related
 
 - [Charger maps](charger-maps.md)
