@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -64,6 +65,15 @@ def run_helper(seed: Path, digest_hex: str) -> dict[str, str]:
     return fields
 
 
+def _is_tuya_profile(data: bytes) -> bool:
+    """A Tuya device profile has `match` + `read` at top level (maps do not)."""
+    try:
+        doc = json.loads(data)
+    except ValueError:
+        return False
+    return isinstance(doc, dict) and "match" in doc and "read" in doc
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--seed", type=Path, default=Path("ota_signing_seed.hex"),
@@ -84,7 +94,12 @@ def main() -> None:
         ap.error(f"{args.map_file}: not found")
 
     data = args.map_file.read_bytes()
-    if len(data) == 0 or len(data) > 8192:
+    if _is_tuya_profile(data):
+        # Tuya device profile (tuya/profiles/*.json): own, smaller size cap.
+        if len(data) > 4096:
+            raise SystemExit(f"{args.map_file}: {len(data)} bytes — over the Tuya profile "
+                              f"size limit (4096), refusing to sign")
+    elif len(data) == 0 or len(data) > 8192:
         # Same size cap the firmware's charger-map validator enforces —
         # signing a map the firmware would reject for size alone is
         # pointless; fail loudly here instead of producing an unusable sig.
@@ -100,7 +115,7 @@ def main() -> None:
     print(f"pub:     {fields['public_key_hex']}")
     print(f"sig:     {fields['signature_hex']}")
     print()
-    print("chargers/index.json entry fields to set:")
+    print(("tuya/index.json" if _is_tuya_profile(data) else "chargers/index.json") + " entry fields to set:")
     print(f'  "sha256": "{digest.hex()}",')
     print(f'  "sig": "{fields["signature_hex"]}"')
 

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-17T19:36:21Z",
+  "profiles": [
+    {
+      "id": "feyree-evse-1",
+      "rev": 1,
+      "kind": "charger",
+      "schema": 1,
+      "file": "tuya/profiles/feyree_evse.json",
+      "sha256": "e9a3056300fa332934fd3054df4f5f4f8a1b143df0000d438142a371008ff423",
+      "sig": "",
+      "verified": false,
+      "product_ids": [
+        "hytatexziwaifxj1",
+        "emvuyyax4lekiooj"
+      ],
+      "label": "Feyree EV charger (read-only, unverified)"
+    }
+  ]
+}

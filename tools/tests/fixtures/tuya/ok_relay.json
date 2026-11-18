@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "id": "relay-1",
+  "rev": 1,
+  "kind": "relay",
+  "verified": false,
+  "label": "Smart relay socket (unverified)",
+  "match": {
+    "product_ids": [
+      "abcd1234efgh5678"
+    ]
+  },
+  "read": {
+    "enabled": {
+      "dp": 1,
+      "type": "bool"
+    },
+    "power_w": {
+      "dp": 19,
+      "type": "int",
+      "scale": 0.1
+    }
+  },
+  "cmd": {
+    "enable": {
+      "dp": 1,
+      "type": "bool"
+    }
+  }
+}
