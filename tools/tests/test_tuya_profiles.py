@@ -86,6 +86,24 @@ class ValidatorTests(unittest.TestCase):
         doc["rev"] = 65536
         self.assertTrue(ui.validate_tuya_profile(doc, n))
 
+    def test_scale_range(self):
+        doc, _, n = load("ok_readonly.json")
+        for ok in (1e-3, 0.1, 1, 100, 1e3):
+            with self.subTest(ok=ok):
+                doc["read"]["power_w"]["scale"] = ok
+                self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+        for bad in (0, 0.0, -0.0, -1, -100, 0.000999, 1000.001, 1e39):
+            with self.subTest(bad=bad):
+                doc["read"]["power_w"]["scale"] = bad
+                self.assertTrue(ui.validate_tuya_profile(doc, n), f"scale {bad} was accepted")
+        for name in ("bad_scale_zero.json", "bad_scale_negative.json", "bad_scale_huge.json"):
+            with self.subTest(name):
+                d, err, m = load(name)
+                self.assertIsNone(err)
+                errors = ui.validate_tuya_profile(d, m)
+                self.assertEqual(len(errors), 1)
+                self.assertIn("scale", errors[0])
+
     def test_label_65_chars_rejected(self):
         doc, _, n = load("ok_readonly.json")
         doc["label"] = "x" * 65
@@ -221,6 +239,36 @@ class IndexTests(unittest.TestCase):
         self.assertEqual(self.run_index(True)[2], [])
         self.write_index([self.add("ok_readonly.json", "a.json")])
         self.assertEqual(self.run_index(True)[2], [])
+
+    def test_sig_must_be_128_hex_when_present(self):
+        for bad in ("ab" * 63, "ab" * 65, "zz" * 64, "ab" * 63 + "a ", " " + "a" * 127):
+            with self.subTest(bad=bad):
+                self.write_index([self.add("ok_cmd.json", "c.json", sig=bad)])
+                problems = self.run_index(True)[2]
+                self.assertTrue(any("128 hex" in p for p in problems), problems)
+        self.write_index([self.add("ok_readonly.json", "a.json", sig="AB" * 64)])
+        self.assertEqual(self.run_index(True)[2], [])
+
+    def run_raw_index(self, text):
+        ui.TUYA_INDEX_PATH.write_text(text)
+        return self.run_index(True)
+
+    def test_malformed_index_is_a_clean_error(self):
+        cases = {
+            "not json": "{not json",
+            "array": "[]",
+            "profiles not a list": '{"profiles": {"a": 1}}',
+            "entry not an object": '{"profiles": ["x", 3, null]}',
+            "file not a string": '{"profiles": [{"file": 7}]}',
+        }
+        for name, text in cases.items():
+            with self.subTest(name):
+                changed, _, problems = self.run_raw_index(text)
+                self.assertFalse(changed)
+                self.assertTrue(problems, f"{name}: no problem reported")
+        _, count, problems = self.run_raw_index('{"profiles": ["x", 3]}')
+        self.assertEqual(count, 2)
+        self.assertEqual(len(problems), 2)
 
     def test_duplicate_product_id_same_rev_fails(self):
         a = self.add("ok_readonly.json", "a.json")

@@ -550,6 +550,9 @@ TUYA_TYPES = ("bool", "int", "enum", "str")
 TUYA_STATE_VALUES = ("A", "B", "C", "E")
 TUYA_TOP_KEYS = {"schema", "id", "rev", "kind", "verified", "label", "match",
                  "limits", "read", "cmd", "quirks"}
+TUYA_SCALE_MIN = 1e-3   # a data point's `scale`: positive, within these bounds (inclusive)
+TUYA_SCALE_MAX = 1e3
+TUYA_SIG_RE = re.compile(r"[0-9a-fA-F]{128}")
 TUYA_ID_RE = re.compile(r"[a-z0-9-]{1,32}")
 TUYA_PRODUCT_ID_RE = re.compile(r"[0-9A-Za-z]{1,16}")
 
@@ -597,8 +600,13 @@ def _tuya_dp_spec(spec, where: str, errors: list[str], *, allow_scale: bool,
         errors.append(f"{where}.dp: must be an integer 1..255")
     if spec.get("type") not in types:
         errors.append(f"{where}.type: must be one of {list(types)}")
-    if "scale" in spec and allow_scale and not _is_num(spec["scale"]):
-        errors.append(f"{where}.scale: must be a finite number")
+    if "scale" in spec and allow_scale:
+        sc = spec["scale"]
+        if not _is_num(sc):
+            errors.append(f"{where}.scale: must be a finite number")
+        elif not TUYA_SCALE_MIN <= sc <= TUYA_SCALE_MAX:
+            errors.append(f"{where}.scale: must be within {TUYA_SCALE_MIN:g}..{TUYA_SCALE_MAX:g} "
+                          f"(positive)")
 
 
 def _tuya_word_ok(v) -> bool:
@@ -763,12 +771,28 @@ def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
     (changed, entry_count)."""
     if not TUYA_INDEX_PATH.exists():
         return False, 0
-    index = json.loads(TUYA_INDEX_PATH.read_text())
+    try:
+        index = json.loads(TUYA_INDEX_PATH.read_text(encoding="utf-8"))
+    except (ValueError, UnicodeDecodeError) as e:
+        problems.append(f"tuya/index.json: not valid JSON: {e}")
+        return False, 0
+    if not isinstance(index, dict):
+        problems.append("tuya/index.json: must be a JSON object")
+        return False, 0
+    entries = index.get("profiles", [])
+    if not isinstance(entries, list):
+        problems.append("tuya/index.json: 'profiles' must be an array")
+        return False, 0
     changed = False
     claimed: dict[tuple[str, int], str] = {}
 
-    for entry in index.get("profiles", []):
+    for i, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            problems.append(f"tuya/index.json: profiles[{i}] must be an object, got {entry!r}")
+            continue
         rel_path = entry.get("file")
+        if not isinstance(rel_path, str):
+            rel_path = None
         if not rel_path:
             problems.append(f"tuya/index.json entry missing 'file': {entry}")
             continue
@@ -805,6 +829,9 @@ def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
         sig = entry.get("sig", "")
         if not isinstance(sig, str):
             problems.append(f"{rel_path}: index 'sig' must be a string")
+        elif sig and not TUYA_SIG_RE.fullmatch(sig):
+            problems.append(f"{rel_path}: index 'sig' must be empty or exactly 128 hex characters "
+                            f"(got {len(sig)} characters)")
         elif "cmd" in doc and not sig:
             problems.append(f"{rel_path}: has cmd but index 'sig' is empty — a profile that can "
                             f"send commands must be signed; run tools/sign_map.py, or ship it "
@@ -823,7 +850,7 @@ def process_tuya_index(args, problems: list[str]) -> tuple[bool, int]:
         TUYA_INDEX_PATH.write_text(json.dumps(index, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         print(f"wrote {TUYA_INDEX_PATH} (updated_at bumped)")
 
-    return changed, len(index.get("profiles", []))
+    return changed, len(entries)
 
 
 def main() -> int:

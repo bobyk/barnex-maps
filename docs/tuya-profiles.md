@@ -46,7 +46,7 @@ See [`feyree_evse.json`](../tuya/profiles/feyree_evse.json) for a complete one.
 | `limits.phases` | `1` or `3` |
 | data point `dp` | integer 1 to 255 |
 | data point `type` | `bool`, `int`, `enum` or `str` |
-| data point `scale` | finite number, default `1`; the raw value is multiplied by it |
+| data point `scale` | number from `0.001` to `1000` inclusive (so never zero or negative), default `1`; the raw value is multiplied by it |
 | `state.map` | 1 to 12 entries; keys are ASCII only, every byte 0x20 to 0x7E, 1 to 23 bytes |
 
 `limits` is required for `charger` and optional for `relay` (if present it is
@@ -85,7 +85,8 @@ a vehicle connects, so the client should send it again.
 
 A profile **with `cmd` must have a non-empty `sig`** in its index entry. A
 profile without `cmd` needs no signature (`"sig": ""`). `update_index.py`
-fails if a `cmd` profile is unsigned. Signing is done by a maintainer with
+fails if a `cmd` profile is unsigned, and if a non-empty `sig` is not exactly
+128 hex characters. Signing is done by a maintainer with
 [`tools/sign_map.py`](../tools/sign_map.py), the same tool and key as for
 [charger maps](charger-maps.md#signing); it accepts profile files (4096 byte
 limit) and prints the `sha256` and `sig` to put in the index entry.
