@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-06T19:05:57Z",
+  "updated_at": "2026-11-19T08:41:03Z",
   "maps": [
     {
       "vendor": "Deye",
@@ -302,6 +302,56 @@
       ],
       "notes": "Cross-checked across three independent community projects (see source, commit-pinned) — not confirmed on real hardware, hence unverified. RTU ONLY: the stock WiFi dongle speaks a proprietary framing wrapper, not plain Modbus/TCP. No native signed grid_power/battery_power register in this protocol — ships as unsigned split pairs (grid_export/import_power, battery_charge/discharge_power), telemetry-only, same limitation as the Growatt GEN3/4 maps. battery_soc omitted: input register 5 packs SOC (low byte) and SOH (high byte) into one word this schema can't decode. Full rationale: the map file's own notes field.",
       "sha256": "7e10e23de86e85103e4510c1fd21f7a7d5a0ca67020e179dbefe4820ed693b0c"
+    },
+    {
+      "vendor": "FoxESS",
+      "file": "maps/foxess_h3_pro.json",
+      "label": "FoxESS H3-Pro / P3-Pro (Modbus TCP, unit 247)",
+      "status": "unverified",
+      "source": [
+        "https://github.com/nathanmarlor/foxess_modbus/blob/94252f0610028f323cd86c1c6051b6aeaf8e866d/custom_components/foxess_modbus/entities/entity_descriptions.py",
+        "https://github.com/nathanmarlor/foxess_modbus/blob/94252f0610028f323cd86c1c6051b6aeaf8e866d/custom_components/foxess_modbus/inverter_profiles.py",
+        "https://github.com/evcc-io/evcc/blob/3e52e65a40df92b47e4b5e9bf231e7fd2bc5964a/templates/definition/meter/fox-ess-h3-smart.yaml"
+      ],
+      "models": [
+        "H3-Pro-15.0 ... H3-Pro-30.0",
+        "P3-Pro-*",
+        "EKD Ampere.StoragePro ASP-*KW-3P (rebadged H3-Pro)"
+      ],
+      "match": [
+        "H3-Pro-*",
+        "P3-Pro-*",
+        "ASP-*KW-3P*"
+      ],
+      "notes": "Modbus TCP, port 502, unit id 247, holding registers (fc 3). Local port 502 is only open on units whose communication module runs a Modbus TCP server (WL-H3-G2 / Smart logger); probe it first (nc -zv <ip> 502). If it is closed, use an RS485-to-Ethernet gateway (Modbus TCP mode) on the EMS RS485 pins 17/18 of the 20-pin COM connector; the same map applies. Signs flipped from the source: meter power 38814 is +export and battery power 39237 is +discharge (both scale -1). battery_soc is BMS 1 (37612); a second battery stack (38310) is not summed. Needs Manager firmware 1.22 or newer: older firmware has energy counters at 0.1 kWh (this map reads 0.01) and frequency at 38846. grid_fault is 39065 bit 0. Per-phase meter power 38816/38818/38820 (+export in the source, flipped) and grid voltage 39123..39125 feed per-phase breaker protection. pv_power is the sum of pv1..pv6 on current firmware (pv1+pv2 only on older firmware).",
+      "sha256": "73e2a75cdea4f43de8aa857dd8af23dd6f7429a797a2ed8cce5c236c74ab8774"
+    },
+    {
+      "vendor": "FoxESS",
+      "file": "maps/foxess_h3_smart.json",
+      "label": "FoxESS H3-Smart / P3-Smart (Modbus TCP, unit 247)",
+      "status": "unverified",
+      "source": [
+        "https://github.com/nathanmarlor/foxess_modbus/blob/94252f0610028f323cd86c1c6051b6aeaf8e866d/custom_components/foxess_modbus/entities/entity_descriptions.py",
+        "https://github.com/nathanmarlor/foxess_modbus/blob/94252f0610028f323cd86c1c6051b6aeaf8e866d/custom_components/foxess_modbus/inverter_profiles.py",
+        "https://github.com/evcc-io/evcc/blob/3e52e65a40df92b47e4b5e9bf231e7fd2bc5964a/templates/definition/meter/fox-ess-h3-smart.yaml"
+      ],
+      "models": [
+        "H3-*-Smart",
+        "H3-*-M",
+        "P3-*-SH",
+        "Solarwatt Vision VSN THREE",
+        "a-TroniX AX Plus",
+        "Enpal I-X",
+        "1KOMMA5 1K5-HI-*"
+      ],
+      "match": [
+        "H3-*-Smart*",
+        "H3-*-M*",
+        "P3-*-SH*"
+      ],
+      "notes": "Modbus TCP, port 502, unit id 247, holding registers (fc 3). Local port 502 is only open on units whose communication module runs a Modbus TCP server (WL-H3-G2 / Smart logger); probe it first (nc -zv <ip> 502). If it is closed, use an RS485-to-Ethernet gateway (Modbus TCP mode) on the EMS RS485 pins 17/18 of the 20-pin COM connector; the same map applies. Signs flipped from the source: meter power 38814 is +export and battery power 39237 is +discharge (both scale -1). battery_soc is BMS 1 (37612); a second battery stack (38310) is not summed. Same register layout as the H3-Pro except grid_fault, which is 39066 bit 0 (39065 reads 0 on and off grid on this model, per a differential read cited in the source). Per-phase meter power 38816/38818/38820 (+export in the source, flipped) and grid voltage 39123..39125 feed per-phase breaker protection. pv_power is the sum of pv1..pv4 on current firmware (pv1+pv2 only on older firmware).",
+      "sha256": "c1431a6668c6073a524a5f90d6a385a39ab6f27155edeb9b293e8fc92dc72c98"
     }
   ]
 }

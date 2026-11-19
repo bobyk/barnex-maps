@@ -44,6 +44,7 @@ not both, unless it changes shared tooling.
 | Fronius | no | Symo/Primo (int+SF and float variants) |
 | SMA | no | native profile, SunSpec fallback |
 | SolarEdge | no | SunSpec + proprietary battery/meter range |
+| FoxESS | no | H3-Pro / P3-Pro, H3-Smart / P3-Smart (Modbus TCP, unit 247; see notes) |
 
 "No" means Barnex cannot yet tell that vendor apart over Modbus on its own.
 The installer can still pick the map from the full catalogue in the setup
