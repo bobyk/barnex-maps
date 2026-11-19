@@ -93,6 +93,16 @@ reader does:
 `total_battery_discharge_energy` · `grid_relay` (1 = on grid) ·
 `grid_fault` (1 = **not** on grid, inverted polarity)
 
+Per-phase names, for three-phase maps (`"phases": 3`): `grid_power_l1` ·
+`grid_power_l2` · `grid_power_l3` (W, **+import / −export**, like
+`grid_power`) · `grid_voltage_l2` · `grid_voltage_l3` (L1 is `grid_voltage`) ·
+`ct_int_current_l1..l3` · `ct_ext_current_l1..l3` (A, signed) ·
+`inverter_power_l1..l3` (W). With all three phase powers and all three
+voltages the controller protects each phase of the main breaker separately.
+Without them it only sees the net sum of the phases, so export on one phase
+can hide an overload on another. The currents are optional; without them the
+phase current is P / U.
+
 Aliases: `grid_active_power`, `meter_power`, `pv_total_power`, `solar_power`,
 `consumption_power`, `soc`, `grid_freq`, `grid_connected`, `grid_failure`.
 
@@ -201,6 +211,7 @@ This is separate from the index `sha256`, which hashes the exact file bytes.
 | `status` | `verified` (checked on real hardware) or `unverified` (badged in the UI) |
 | `source` | upstream register tables, each **pinned to a commit SHA** |
 | `models` | optional list of models the map covers |
+| `match` | optional list of patterns for the model name the controller reads from the inverter (`*` = any run of characters, case-insensitive, whole name). Needed when several entries share a `vendor`: the entry whose pattern matches is applied without asking |
 | `notes` | optional; keep short, the device downloads the whole index |
 | `sha256` | lowercase hex SHA-256 of the file bytes; `tools/update_index.py` fills it in |
 
@@ -212,8 +223,10 @@ update.
 1. **Auto-fetch.** When an installer saves an inverter with a detected vendor
    and no map is active, the controller downloads `index.json`, matches
    `vendor`, downloads the file, checks it against the index `sha256` and
-   applies it. If several maps match, it asks the installer to pick; if none
-   match, it offers the whole catalogue.
+   applies it. If several maps match the vendor, the one whose `match`
+   pattern fits the detected model is applied; when none or more than one
+   fits, the installer picks. If no map matches the vendor, it offers the
+   whole catalogue.
 2. **Manual.** A map can also be uploaded locally from the installer page or
    pushed from the Barnex cloud. Same validation, same error messages.
 3. **Validation errors** name the field and the reason, e.g.
@@ -288,6 +301,13 @@ update.
 - The off-grid flag is bit 0 of 39065 on the H3-Pro and of 39066 on the
   H3-Smart; that is the only difference between the two maps apart from the
   number of PV strings.
+- Per-phase meter power is 38816 / 38818 / 38820 (R / S / T, int32, 0.1 W,
+  positive = feed-in, so the maps use `scale -0.1`); grid voltage is
+  39123..39125. The maps do not list `inverter_power_l1..l3`
+  (39248 / 39250 / 39252): reading them would merge a request across
+  39239..39247, which no source documents.
+- The model name is ASCII in holding 30000..30007; the index `match`
+  patterns are compared with it.
 
 ## Related
 

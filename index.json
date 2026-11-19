@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-18T08:15:46Z",
+  "updated_at": "2026-11-19T08:41:03Z",
   "maps": [
     {
       "vendor": "Deye",
@@ -318,8 +318,13 @@
         "P3-Pro-*",
         "EKD Ampere.StoragePro ASP-*KW-3P (rebadged H3-Pro)"
       ],
-      "notes": "Modbus TCP, port 502, unit id 247, holding registers (fc 3). Local port 502 is only open on units whose communication module runs a Modbus TCP server (WL-H3-G2 / Smart logger); probe it first (nc -zv <ip> 502). If it is closed, use an RS485-to-Ethernet gateway (Modbus TCP mode) on the EMS RS485 pins 17/18 of the 20-pin COM connector; the same map applies. Signs flipped from the source: meter power 38814 is +export and battery power 39237 is +discharge (both scale -1). battery_soc is BMS 1 (37612); a second battery stack (38310) is not summed. Needs Manager firmware 1.22 or newer: older firmware has energy counters at 0.1 kWh (this map reads 0.01) and frequency at 38846. grid_fault is 39065 bit 0. The firmware sums only pv1+pv2 into pv_power; pv3..pv6 are read and kept for newer firmware, so PV is under-reported when strings 3-6 carry power.",
-      "sha256": "e3efd65ddf68163aa4fffb393731ea060e1e579a7fb6573994211b99a20405bb"
+      "match": [
+        "H3-Pro-*",
+        "P3-Pro-*",
+        "ASP-*KW-3P*"
+      ],
+      "notes": "Modbus TCP, port 502, unit id 247, holding registers (fc 3). Local port 502 is only open on units whose communication module runs a Modbus TCP server (WL-H3-G2 / Smart logger); probe it first (nc -zv <ip> 502). If it is closed, use an RS485-to-Ethernet gateway (Modbus TCP mode) on the EMS RS485 pins 17/18 of the 20-pin COM connector; the same map applies. Signs flipped from the source: meter power 38814 is +export and battery power 39237 is +discharge (both scale -1). battery_soc is BMS 1 (37612); a second battery stack (38310) is not summed. Needs Manager firmware 1.22 or newer: older firmware has energy counters at 0.1 kWh (this map reads 0.01) and frequency at 38846. grid_fault is 39065 bit 0. Per-phase meter power 38816/38818/38820 (+export in the source, flipped) and grid voltage 39123..39125 feed per-phase breaker protection. pv_power is the sum of pv1..pv6 on current firmware (pv1+pv2 only on older firmware).",
+      "sha256": "73e2a75cdea4f43de8aa857dd8af23dd6f7429a797a2ed8cce5c236c74ab8774"
     },
     {
       "vendor": "FoxESS",
@@ -340,8 +345,13 @@
         "Enpal I-X",
         "1KOMMA5 1K5-HI-*"
       ],
-      "notes": "Modbus TCP, port 502, unit id 247, holding registers (fc 3). Local port 502 is only open on units whose communication module runs a Modbus TCP server (WL-H3-G2 / Smart logger); probe it first (nc -zv <ip> 502). If it is closed, use an RS485-to-Ethernet gateway (Modbus TCP mode) on the EMS RS485 pins 17/18 of the 20-pin COM connector; the same map applies. Signs flipped from the source: meter power 38814 is +export and battery power 39237 is +discharge (both scale -1). battery_soc is BMS 1 (37612); a second battery stack (38310) is not summed. Same register layout as the H3-Pro except grid_fault, which is 39066 bit 0 (39065 reads 0 on and off grid on this model, per a differential read cited in the source). The firmware sums only pv1+pv2 into pv_power; pv3/pv4 are read and kept.",
-      "sha256": "cbda56e3746a0d4535ec354ea1a55663f55001af51341547f7884609127bda86"
+      "match": [
+        "H3-*-Smart*",
+        "H3-*-M*",
+        "P3-*-SH*"
+      ],
+      "notes": "Modbus TCP, port 502, unit id 247, holding registers (fc 3). Local port 502 is only open on units whose communication module runs a Modbus TCP server (WL-H3-G2 / Smart logger); probe it first (nc -zv <ip> 502). If it is closed, use an RS485-to-Ethernet gateway (Modbus TCP mode) on the EMS RS485 pins 17/18 of the 20-pin COM connector; the same map applies. Signs flipped from the source: meter power 38814 is +export and battery power 39237 is +discharge (both scale -1). battery_soc is BMS 1 (37612); a second battery stack (38310) is not summed. Same register layout as the H3-Pro except grid_fault, which is 39066 bit 0 (39065 reads 0 on and off grid on this model, per a differential read cited in the source). Per-phase meter power 38816/38818/38820 (+export in the source, flipped) and grid voltage 39123..39125 feed per-phase breaker protection. pv_power is the sum of pv1..pv4 on current firmware (pv1+pv2 only on older firmware).",
+      "sha256": "c1431a6668c6073a524a5f90d6a385a39ab6f27155edeb9b293e8fc92dc72c98"
     }
   ]
 }

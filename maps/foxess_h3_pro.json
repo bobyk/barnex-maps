@@ -2,7 +2,7 @@
   "brand": "foxess",
   "model": "H3-Pro / P3-Pro",
   "protocol_version": "fox_h3pro_m122",
-  "created_at": "2026-11-18T12:00:00Z",
+  "created_at": "2026-11-19T12:00:00Z",
   "phases": 3,
   "transport": {
     "type": "tcp",
@@ -14,6 +14,33 @@
     {
       "name": "grid_power",
       "address": 38814,
+      "function_code": 3,
+      "data_type": "int32",
+      "scale": -0.1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_power_l1",
+      "address": 38816,
+      "function_code": 3,
+      "data_type": "int32",
+      "scale": -0.1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_power_l2",
+      "address": 38818,
+      "function_code": 3,
+      "data_type": "int32",
+      "scale": -0.1,
+      "unit": "W",
+      "access": "read"
+    },
+    {
+      "name": "grid_power_l3",
+      "address": 38820,
       "function_code": 3,
       "data_type": "int32",
       "scale": -0.1,
@@ -104,6 +131,24 @@
     {
       "name": "grid_voltage",
       "address": 39123,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage_l2",
+      "address": 39124,
+      "function_code": 3,
+      "data_type": "uint16",
+      "scale": 0.1,
+      "unit": "V",
+      "access": "read"
+    },
+    {
+      "name": "grid_voltage_l3",
+      "address": 39125,
       "function_code": 3,
       "data_type": "uint16",
       "scale": 0.1,
