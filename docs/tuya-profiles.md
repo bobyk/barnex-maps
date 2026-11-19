@@ -77,7 +77,8 @@ Commands make a profile able to change the device, so they are limited to three:
 - `set_a`: `{"dp": N, "type": "int"}`
 - `enable`: `{"dp": N, "type": "bool"}` or `{"dp": N, "type": "enum", "on": "<str>", "off": "<str>"}` (`on`/`off`: ASCII only, every byte 0x20 to 0x7E, 1 to 23 bytes)
 - `countdown` (`kind: "relay"` only): `{"dp": N, "type": "int"}`, a timer in
-  seconds. Optional, but recommended (see below).
+  seconds. Optional, but recommended (see below). Its `dp` must differ from `cmd.enable`'s `dp`
+  (one command frame would carry the same data point twice).
 
 A `cmd` data point that `read` also declares must have a compatible type:
 `set_a` and `countdown` (int) need an int, `enable` as `bool` needs a bool, and `enable` as

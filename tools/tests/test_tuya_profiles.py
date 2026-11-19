@@ -255,6 +255,11 @@ class ValidatorTests(unittest.TestCase):
         doc["read"]["enabled"] = {"dp": 2, "type": "str"}
         self.assertEqual(ui.validate_tuya_profile(doc, n), [])
 
+    def test_countdown_dp_must_differ_from_enable_dp(self):
+        doc, n = self.relay(countdown={"dp": 1, "type": "int"})
+        errors = ui.validate_tuya_profile(doc, n)
+        self.assertTrue(any("cmd.countdown" in e and "cmd.enable" in e for e in errors), errors)
+
     def test_energy_kwh_is_a_relay_read_role(self):
         doc, _, n = load("ok_relay.json")
         doc["read"]["energy_kwh"] = {"dp": 17, "type": "int", "scale": 0.001}

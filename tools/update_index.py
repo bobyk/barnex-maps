@@ -799,6 +799,11 @@ def validate_tuya_profile(doc, raw_len: int, draft: bool = False) -> list[str]:
                     if need not in cmd:
                         errors.append(f"cmd.{need} is required: a charger with commands needs "
                                       f"both cmd.set_a and cmd.enable")
+            cd, ed = cmd.get("countdown"), cmd.get("enable")
+            if (isinstance(cd, dict) and isinstance(ed, dict) and _is_int(cd.get("dp"))
+                    and _is_int(ed.get("dp")) and cd["dp"] == ed["dp"]):
+                errors.append(f"cmd.countdown: dp {cd['dp']} is the same as cmd.enable's dp "
+                              f"(one frame would carry the data point twice)")
             if kind == "relay":
                 if "enable" not in cmd:
                     errors.append("cmd.enable is required: a relay with commands needs it "
