@@ -68,7 +68,7 @@ All optional, except `state` for `kind: charger` and `enabled` for a `relay` tha
 | `power_w`, `current_a`, `voltage_v` | live measurements (use `scale` for units) |
 | `session_kwh` | energy of the current session |
 | `temp_c` | device temperature |
-| `energy_kwh` | `relay` only: cumulative energy counter of the device, kWh (standard sockets: DP 17, `scale` `0.001`) |
+| `energy_kwh` | `relay` only: cumulative energy counter of the device, kWh. It must be a cumulative counter: monotonic, resetting only when the device itself is reset. On standard sockets DP 17 is often an **increment** (energy since the last report), not a running total; do not map it to `energy_kwh` without checking on the device |
 
 ### `cmd` (optional)
 

@@ -292,7 +292,7 @@ class ValidatorTests(unittest.TestCase):
         self.assertEqual(doc["read"]["current_a"], {"dp": 18, "type": "int", "scale": 0.001})
         self.assertEqual(doc["read"]["power_w"], {"dp": 19, "type": "int", "scale": 0.1})
         self.assertEqual(doc["read"]["voltage_v"], {"dp": 20, "type": "int", "scale": 0.1})
-        self.assertEqual(doc["read"]["energy_kwh"], {"dp": 17, "type": "int", "scale": 0.001})
+        self.assertNotIn("energy_kwh", doc["read"])  # DP 17 is often an increment
         index = json.loads((REPO / "tuya" / "index.json").read_text())
         self.assertFalse(any("socket_standard" in e["file"] for e in index["profiles"]))
 

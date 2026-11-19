@@ -27,11 +27,6 @@
       "dp": 20,
       "type": "int",
       "scale": 0.1
-    },
-    "energy_kwh": {
-      "dp": 17,
-      "type": "int",
-      "scale": 0.001
     }
   },
   "cmd": {
