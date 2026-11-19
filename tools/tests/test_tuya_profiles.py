@@ -197,6 +197,84 @@ class ValidatorTests(unittest.TestCase):
         self.assertEqual(list(doc["cmd"]), ["enable"])
         self.assertEqual(ui.validate_tuya_profile(doc, n), [])
 
+    def relay(self, **cmd_extra):
+        doc, _, n = load("ok_relay.json")
+        doc["cmd"].update(cmd_extra)
+        return doc, n
+
+    def test_relay_with_countdown_passes(self):
+        doc, n = self.relay(countdown={"dp": 9, "type": "int"})
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+
+    def test_relay_countdown_must_be_int_with_a_valid_dp(self):
+        for spec in ({"dp": 9, "type": "bool"}, {"dp": 9, "type": "enum"},
+                     {"dp": 0, "type": "int"}, {"dp": 256, "type": "int"},
+                     {"dp": 9, "type": "int", "scale": 2}, {"type": "int"}):
+            with self.subTest(spec):
+                doc, n = self.relay(countdown=spec)
+                self.assertTrue(any("cmd.countdown" in e
+                                    for e in ui.validate_tuya_profile(doc, n)))
+
+    def test_charger_countdown_is_rejected(self):
+        doc, _, n = load("ok_cmd.json")
+        doc["cmd"]["countdown"] = {"dp": 9, "type": "int"}
+        errors = ui.validate_tuya_profile(doc, n)
+        self.assertTrue(any("cmd.countdown" in e for e in errors), errors)
+
+    def test_relay_cmd_needs_enable_and_read_enabled(self):
+        doc, _, n = load("ok_relay.json")
+        del doc["cmd"]["enable"]
+        doc["cmd"]["countdown"] = {"dp": 9, "type": "int"}
+        self.assertTrue(any("cmd.enable" in e for e in ui.validate_tuya_profile(doc, n)))
+        doc, _, n = load("ok_relay.json")
+        del doc["read"]["enabled"]
+        self.assertTrue(any("read.enabled" in e for e in ui.validate_tuya_profile(doc, n)))
+        # a read-only relay (no cmd) needs no read.enabled
+        del doc["cmd"]
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+
+    def test_countdown_type_must_match_read_of_same_dp(self):
+        doc, n = self.relay(countdown={"dp": 9, "type": "int"})
+        doc["read"]["countdown"] = {"dp": 9, "type": "bool"}
+        self.assertTrue(any("read.countdown" in e or "cmd.countdown" in e
+                            for e in ui.validate_tuya_profile(doc, n)))
+
+    def test_energy_kwh_is_a_relay_read_role(self):
+        doc, _, n = load("ok_relay.json")
+        doc["read"]["energy_kwh"] = {"dp": 17, "type": "int", "scale": 0.001}
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+        doc["read"]["energy_kwh"] = {"dp": 17, "type": "int", "scale": 0}
+        self.assertTrue(ui.validate_tuya_profile(doc, n))
+        doc, _, n = load("ok_cmd.json")
+        doc["read"]["energy_kwh"] = {"dp": 17, "type": "int", "scale": 0.001}
+        self.assertTrue(any("energy_kwh" in e for e in ui.validate_tuya_profile(doc, n)))
+
+    def test_empty_product_ids_only_for_drafts(self):
+        doc, _, n = load("ok_relay.json")
+        doc["match"]["product_ids"] = []
+        self.assertTrue(ui.validate_tuya_profile(doc, n))
+        self.assertEqual(ui.validate_tuya_profile(doc, n, draft=True), [])
+        doc["match"]["product_ids"] = ["bad id"]
+        self.assertTrue(ui.validate_tuya_profile(doc, n, draft=True))
+
+    def test_standard_socket_draft(self):
+        path = REPO / "tuya" / "drafts" / "socket_standard_cmd.json"
+        errors, _ = ui.check_tuya_draft(path)
+        self.assertEqual(errors, [])
+        doc = json.loads(path.read_text())
+        self.assertEqual(doc["kind"], "relay")
+        self.assertIs(doc["verified"], False)
+        self.assertEqual(doc["match"]["product_ids"], [])
+        self.assertEqual(doc["cmd"], {"enable": {"dp": 1, "type": "bool"},
+                                      "countdown": {"dp": 9, "type": "int"}})
+        self.assertEqual(doc["read"]["enabled"], {"dp": 1, "type": "bool"})
+        self.assertEqual(doc["read"]["current_a"], {"dp": 18, "type": "int", "scale": 0.001})
+        self.assertEqual(doc["read"]["power_w"], {"dp": 19, "type": "int", "scale": 0.1})
+        self.assertEqual(doc["read"]["voltage_v"], {"dp": 20, "type": "int", "scale": 0.1})
+        self.assertEqual(doc["read"]["energy_kwh"], {"dp": 17, "type": "int", "scale": 0.001})
+        index = json.loads((REPO / "tuya" / "index.json").read_text())
+        self.assertFalse(any("socket_standard" in e["file"] for e in index["profiles"]))
+
     def test_bool_is_not_an_int(self):
         doc, _, n = load("ok_readonly.json")
         doc["rev"] = True

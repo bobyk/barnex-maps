@@ -546,7 +546,7 @@ def process_chargers_index(args, problems: list[str]) -> tuple[bool, int]:
 
 TUYA_MAX_BYTES = 4096
 TUYA_ROLES = ("state", "set_a", "enabled", "power_w", "current_a", "voltage_v",
-              "session_kwh", "temp_c")
+              "session_kwh", "temp_c", "energy_kwh")
 TUYA_TYPES = ("bool", "int", "enum", "str")
 TUYA_STATE_VALUES = ("A", "B", "C", "E")
 TUYA_TOP_KEYS = {"schema", "id", "rev", "kind", "verified", "label", "match",
@@ -652,7 +652,7 @@ def _tuya_cmd_vs_read(cmd, read, errors: list[str]) -> None:
     if not isinstance(cmd, dict) or not isinstance(read, dict):
         return
     for k, spec in cmd.items():
-        if k not in ("set_a", "enable") or not isinstance(spec, dict):
+        if k not in ("set_a", "enable", "countdown") or not isinstance(spec, dict):
             continue
         dp, ctype = spec.get("dp"), spec.get("type")
         if not _is_int(dp) or ctype not in _TUYA_CMD_READ_TYPES:
@@ -666,8 +666,10 @@ def _tuya_cmd_vs_read(cmd, read, errors: list[str]) -> None:
                               f"declares the same dp as {rtype!r}")
 
 
-def validate_tuya_profile(doc, raw_len: int) -> list[str]:
-    """Returns a list of errors (empty = valid). `raw_len` is the file size in bytes."""
+def validate_tuya_profile(doc, raw_len: int, draft: bool = False) -> list[str]:
+    """Returns a list of errors (empty = valid). `raw_len` is the file size in bytes.
+    `draft`: a draft may have an empty `match.product_ids` (a generic profile that
+    names no product yet); every other rule is the same."""
     errors: list[str] = []
     if raw_len > TUYA_MAX_BYTES:
         errors.append(f"file is {raw_len} bytes, limit is {TUYA_MAX_BYTES}")
@@ -701,7 +703,8 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
         errors.append("match must be an object with exactly 'product_ids'")
     else:
         ids = match["product_ids"]
-        if not isinstance(ids, list) or not 1 <= len(ids) <= 8:
+        lo_ids = 0 if draft else 1
+        if not isinstance(ids, list) or not lo_ids <= len(ids) <= 8:
             errors.append("match.product_ids must be a list of 1..8 items")
         else:
             for i in ids:
@@ -733,6 +736,8 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
                 errors.append(f"{where}: unknown role")
                 continue
             is_state = role == "state"
+            if role == "energy_kwh" and kind != "relay":
+                errors.append(f"{where}: only a 'relay' profile may declare this role")
             _tuya_dp_spec(spec, where, errors, allow_scale=not is_state, allow_map=is_state)
             if is_state and isinstance(spec, dict):
                 if spec.get("type") != "enum":
@@ -772,6 +777,11 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
                     else:
                         _tuya_dp_spec(spec, where, errors, allow_scale=False, allow_map=False,
                                       types=("bool", "enum"))
+                elif k == "countdown":
+                    if kind != "relay":
+                        errors.append(f"{where}: only a 'relay' profile may have a countdown")
+                    _tuya_dp_spec(spec, where, errors, allow_scale=False, allow_map=False,
+                                  types=("int",))
                 else:
                     errors.append(f"{where}: unknown command")
             if kind == "charger":
@@ -779,6 +789,13 @@ def validate_tuya_profile(doc, raw_len: int) -> list[str]:
                     if need not in cmd:
                         errors.append(f"cmd.{need} is required: a charger with commands needs "
                                       f"both cmd.set_a and cmd.enable")
+            if kind == "relay":
+                if "enable" not in cmd:
+                    errors.append("cmd.enable is required: a relay with commands needs it "
+                                  "(cmd.countdown alone cannot switch the relay)")
+                if not isinstance(read, dict) or "enabled" not in read:
+                    errors.append("read.enabled is required: a relay with commands must "
+                                  "report its switch state")
 
     _tuya_cmd_vs_read(doc.get("cmd"), doc.get("read"), errors)
 
@@ -901,7 +918,7 @@ def check_tuya_draft(path: Path) -> tuple[list[str], dict | None]:
     except OSError as e:
         return [f"cannot read file: {e}"], None
     doc, err = parse_tuya_profile(raw)
-    errors = [err] if err else validate_tuya_profile(doc, len(raw))
+    errors = [err] if err else validate_tuya_profile(doc, len(raw), draft=True)
     if not err and isinstance(doc, dict) and doc.get("verified") is True:
         errors.append("a draft is never verified: set \"verified\" to false "
                       "(verification is recorded only after a bench test of the published profile)")

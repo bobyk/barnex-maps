@@ -40,7 +40,7 @@ See [`feyree_evse.json`](../tuya/profiles/feyree_evse.json) for a complete one.
 | `kind` | `charger` or `relay` |
 | `verified` | optional boolean, default `false` |
 | `label` | 1 to 64 **bytes** of UTF-8 (not characters), no control characters (below 0x20 or 0x7F) |
-| `match.product_ids` | 1 to 8 items, each `[0-9A-Za-z]`, 1 to 16 chars |
+| `match.product_ids` | 1 to 8 items, each `[0-9A-Za-z]`, 1 to 16 chars (a draft may leave the list empty) |
 | `limits.min_a` | integer 6 to 32 |
 | `limits.max_a` | integer `min_a` to 80 |
 | `limits.phases` | `1` or `3` |
@@ -58,7 +58,7 @@ key; a valid pair such as an emoji in `label` is fine (it counts as 4 bytes).
 
 ### `read` roles
 
-All optional, except `state` for `kind: charger`.
+All optional, except `state` for `kind: charger` and `enabled` for a `relay` that has `cmd`.
 
 | role | meaning |
 |---|---|
@@ -68,23 +68,45 @@ All optional, except `state` for `kind: charger`.
 | `power_w`, `current_a`, `voltage_v` | live measurements (use `scale` for units) |
 | `session_kwh` | energy of the current session |
 | `temp_c` | device temperature |
+| `energy_kwh` | `relay` only: cumulative energy counter of the device, kWh (standard sockets: DP 17, `scale` `0.001`) |
 
 ### `cmd` (optional)
 
-Commands make a profile able to change the device, so they are limited to two:
+Commands make a profile able to change the device, so they are limited to three:
 
 - `set_a`: `{"dp": N, "type": "int"}`
 - `enable`: `{"dp": N, "type": "bool"}` or `{"dp": N, "type": "enum", "on": "<str>", "off": "<str>"}` (`on`/`off`: ASCII only, every byte 0x20 to 0x7E, 1 to 23 bytes)
+- `countdown` (`kind: "relay"` only): `{"dp": N, "type": "int"}`, a timer in
+  seconds. Optional, but recommended (see below).
 
 A `cmd` data point that `read` also declares must have a compatible type:
-`set_a` (int) needs an int, `enable` as `bool` needs a bool, and `enable` as
+`set_a` and `countdown` (int) need an int, `enable` as `bool` needs a bool, and `enable` as
 `enum` needs an enum or str. A mismatch (for example a start/stop enum on a DP
 that `read` calls a bool) is an error: the same DP cannot carry two types.
 
 A `kind: "charger"` profile that has `cmd` must declare both `set_a` and
 `enable`. A charger that can be set but never started or stopped, or the
 reverse, is not a usable command profile, so either one alone is an error
-(a `relay` profile needs only `enable`).
+(a `relay` profile needs only `enable`, plus `read.enabled`: the switch state,
+so the client can see what the relay is doing).
+
+#### Relay countdown
+
+On the standard socket profile the countdown DP counts down in seconds and,
+when it reaches 0, the device flips the switch to the **opposite** state. That
+is what makes it a safety timer, and it fixes how a client must use it:
+
+- Write the countdown **only while the switch is ON**. Then reaching 0 turns
+  the socket OFF. Written while the switch is OFF, it would turn the socket ON
+  when it expires, which is the opposite of the safe direction. A client must
+  never write it while the switch is off or its state is unknown.
+- While the load should stay on, the client refreshes the countdown before it
+  runs out. If the client disappears (power cut, crash, network down), nothing
+  refreshes it and the device switches itself off.
+
+A relay profile without `cmd.countdown` is still valid, but a relay that the
+client cannot get to switch itself off would stay on if the client is lost.
+Clients should warn the user about that before using such a profile.
 
 ### `quirks` (optional)
 
