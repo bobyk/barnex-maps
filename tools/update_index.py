@@ -657,7 +657,17 @@ def _tuya_cmd_vs_read(cmd, read, errors: list[str]) -> None:
         dp, ctype = spec.get("dp"), spec.get("type")
         if not _is_int(dp) or ctype not in _TUYA_CMD_READ_TYPES:
             continue  # already reported by the per-field checks
+        if k == "enable":
+            # read.enabled is the state of this very switch: its type must fit
+            # cmd.enable even when the data point numbers differ.
+            ren = read.get("enabled")
+            rtype = ren.get("type") if isinstance(ren, dict) else None
+            if rtype in TUYA_TYPES and rtype not in _TUYA_CMD_READ_TYPES[ctype]:
+                errors.append(f"cmd.enable: has type {ctype!r} but read.enabled "
+                              f"declares {rtype!r}")
         for role, rspec in read.items():
+            if k == "enable" and role == "enabled":
+                continue  # compared above
             if not isinstance(rspec, dict) or not _is_int(rspec.get("dp")) or rspec["dp"] != dp:
                 continue
             rtype = rspec.get("type")

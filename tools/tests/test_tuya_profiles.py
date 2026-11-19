@@ -235,9 +235,25 @@ class ValidatorTests(unittest.TestCase):
 
     def test_countdown_type_must_match_read_of_same_dp(self):
         doc, n = self.relay(countdown={"dp": 9, "type": "int"})
-        doc["read"]["countdown"] = {"dp": 9, "type": "bool"}
-        self.assertTrue(any("read.countdown" in e or "cmd.countdown" in e
-                            for e in ui.validate_tuya_profile(doc, n)))
+        doc["read"]["power_w"] = {"dp": 9, "type": "bool"}
+        errors = ui.validate_tuya_profile(doc, n)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("cmd.countdown: dp 9 has type 'int'", errors[0])
+        self.assertIn("read.power_w", errors[0])
+
+    def test_read_enabled_type_must_fit_cmd_enable_even_on_other_dp(self):
+        doc, _, n = load("ok_relay.json")
+        doc["read"]["enabled"] = {"dp": 2, "type": "int"}
+        errors = ui.validate_tuya_profile(doc, n)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("cmd.enable", errors[0])
+        self.assertIn("read.enabled", errors[0])
+        doc["read"]["enabled"] = {"dp": 2, "type": "bool"}
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
+        doc["cmd"]["enable"] = {"dp": 1, "type": "enum", "on": "on", "off": "off"}
+        self.assertTrue(ui.validate_tuya_profile(doc, n))
+        doc["read"]["enabled"] = {"dp": 2, "type": "str"}
+        self.assertEqual(ui.validate_tuya_profile(doc, n), [])
 
     def test_energy_kwh_is_a_relay_read_role(self):
         doc, _, n = load("ok_relay.json")

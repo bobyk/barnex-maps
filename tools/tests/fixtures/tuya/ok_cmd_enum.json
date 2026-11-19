@@ -36,7 +36,7 @@
     },
     "enabled": {
       "dp": 112,
-      "type": "bool"
+      "type": "str"
     },
     "power_w": {
       "dp": 109,
