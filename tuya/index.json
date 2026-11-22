@@ -16,6 +16,20 @@
         "emvuyyax4lekiooj"
       ],
       "label": "Feyree EV charger (read-only, unverified)"
+    },
+    {
+      "id": "evse-qccdz-ebdm-1",
+      "rev": 1,
+      "kind": "charger",
+      "schema": 1,
+      "file": "tuya/profiles/evse_qccdz_ebdm_cmd.json",
+      "sha256": "3f11fb9005ddb6bd6677798bb8d19970a17a51f1315e660e92b425abfdb0487c",
+      "sig": "af14b68f8995b4998ae17f4bdbf4bf983244ad75efa71060883e69641fccb9d793d4a9ff81beebe586cfbedad455c0aac10145eb13e82e8e44d86e283de72106",
+      "verified": false,
+      "product_ids": [
+        "ebdm8ax35pgodi2s"
+      ],
+      "label": "Tuya EV charger qccdz (commands, unverified)"
     }
   ]
 }

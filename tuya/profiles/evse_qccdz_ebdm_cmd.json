@@ -4,7 +4,7 @@
   "rev": 1,
   "kind": "charger",
   "verified": false,
-  "label": "Tuya EV charger qccdz (commands, unverified draft)",
+  "label": "Tuya EV charger qccdz (commands, unverified)",
   "match": {
     "product_ids": [
       "ebdm8ax35pgodi2s"
