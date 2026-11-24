@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-17T19:36:21Z",
+  "updated_at": "2026-11-24T06:32:23Z",
   "profiles": [
     {
       "id": "feyree-evse-1",
@@ -19,17 +19,17 @@
     },
     {
       "id": "evse-qccdz-ebdm-1",
-      "rev": 1,
+      "rev": 2,
       "kind": "charger",
       "schema": 1,
       "file": "tuya/profiles/evse_qccdz_ebdm_cmd.json",
-      "sha256": "3f11fb9005ddb6bd6677798bb8d19970a17a51f1315e660e92b425abfdb0487c",
-      "sig": "af14b68f8995b4998ae17f4bdbf4bf983244ad75efa71060883e69641fccb9d793d4a9ff81beebe586cfbedad455c0aac10145eb13e82e8e44d86e283de72106",
+      "sha256": "acd06a7d3a3af54d1dcee247bf706b3ede63d364d28984a66752641fe297dbd9",
+      "sig": "a76d1e6bc361588a873452551005070543d4aa4397d163277f7c39766e9d68e3287cfdafbc4347943f65a7893362e76f03fd35dfabf3aba964f7690462d32207",
       "verified": false,
       "product_ids": [
         "ebdm8ax35pgodi2s"
       ],
-      "label": "Tuya EV charger qccdz (commands, unverified)"
+      "label": "Feyree 22 kW 3-phase (commands, unverified)"
     }
   ]
 }
