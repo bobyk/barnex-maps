@@ -71,6 +71,7 @@ means. Format and limits: [`docs/tuya-profiles.md`](docs/tuya-profiles.md).
 | Device | Profile | Control |
 |---|---|---|
 | Feyree EV charger (Tuya product ids `hytatexziwaifxj1`, `emvuyyax4lekiooj`) | `feyree_evse.json` | read-only, **unverified** |
+| Feyree 22 kW EV charger (Tuya product id `ebdm8ax35pgodi2s`) | `evse_qccdz_ebdm.json` | read-only, **signed**, unverified |
 
 A command profile for the Feyree charger exists only as a
 [draft](tuya/drafts/README.md): unverified, unsigned, not in the index, used by no device.
