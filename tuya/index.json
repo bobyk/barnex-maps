@@ -19,17 +19,17 @@
     },
     {
       "id": "evse-qccdz-ebdm-1",
-      "rev": 4,
+      "rev": 5,
       "kind": "charger",
       "schema": 1,
       "file": "tuya/profiles/evse_qccdz_ebdm.json",
-      "sha256": "bf766444ef27c4df8220c89d4466edaec2261779375c4bab89ce51324c588733",
-      "sig": "fb7eac1911bc016027f9a6f0d7aaff1ff9fef0e6426100f215930cda4196e0ed16dd27cf6d326228ea46bfb9578dd640a9c279cf631ee7bc820ac165df416907",
+      "sha256": "3176a55872f45d7f3129f551f101f549d617112a4152728a9042f43fbcdd5b4e",
+      "sig": "9abfd5c99ace75b28ad19dc3e6847e919f0d186d49f06dee55da181756169d3c46029ac23f7bceeb6cafce0036887d13c9659752f5588d2f368084b4e1f0e505",
       "verified": false,
       "product_ids": [
         "ebdm8ax35pgodi2s"
       ],
-      "label": "Feyree 22 kW, 1-phase install (read-only, unverified)"
+      "label": "Feyree 22 kW, 1-phase install (unverified)"
     }
   ]
 }
