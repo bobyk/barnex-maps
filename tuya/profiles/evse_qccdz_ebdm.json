@@ -1,10 +1,10 @@
 {
   "schema": 1,
   "id": "evse-qccdz-ebdm-1",
-  "rev": 5,
+  "rev": 6,
   "kind": "charger",
-  "verified": false,
-  "label": "Feyree 22 kW, 1-phase install (unverified)",
+  "verified": true,
+  "label": "Feyree 22 kW, 1-phase install",
   "match": {
     "product_ids": [
       "ebdm8ax35pgodi2s"
@@ -42,6 +42,11 @@
       "dp": 109,
       "type": "int",
       "scale": 100
+    },
+    "session_kwh": {
+      "dp": 112,
+      "type": "int",
+      "scale": 0.1
     },
     "temp_c": {
       "dp": 110,
